@@ -2,9 +2,9 @@
 #define MAIN_H
 
 #include "../pinc.h"
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
+#include "inc/lua.h"
+#include "inc/lualib.h"
+#include "inc/lauxlib.h"
 #include <stdlib.h>
 
 #ifdef _WIN32

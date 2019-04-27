@@ -6,17 +6,18 @@ ifeq ($(OS),Windows_NT)
 EXT=dll
 CFLAGS=-m32 -Wall -O1 -g -mtune=core2
 LFLAGS=-m32 -g -shared -static-libgcc -static-libstdc++ 
-LIBS=-L.. -lcom_plugin -L. -lluajit
+LIBS=-L.. -lcom_plugin -L./LuaJIT/src -lluajit
 CLEAN = del *.o
 else
 EXT=so
 CFLAGS=-m32 -Wall -O1 -g -fvisibility=hidden -mtune=core2
 LFLAGS=-m32 -g -shared
-LIBS=
+LIBS=-L./LuaJIT/src -lluajit
 CLEAN = rm *.o
 endif
 
 all: 
+	$(MAKE) -C LuaJIT/src
 	$(CC) $(CFLAGS) -c *.c
 	$(CC) $(LFLAGS) -o $(TARGET_NAME).$(EXT) *.o $(LIBS)
 	
