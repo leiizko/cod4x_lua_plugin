@@ -56,4 +56,4 @@ main()
 ```
 
 # Compiling
-TODO
+Enter directory and run make. Needs to be placed in plugins directory in CoD4X server source code. On Windows you need to compile the server first.
