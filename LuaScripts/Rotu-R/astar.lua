@@ -30,7 +30,7 @@ local astar = {}
 ----------------------------------------------------------------
 
 local INF = 1/0
-local cachedPaths = {}
+local cachedPaths = nil
 local nodes = nil
 local cachedNum = 0
 
@@ -149,6 +149,15 @@ local function buildNodes ( tokens )
 	table.insert ( nodes, protonode )
 end
 
+local function clearAll ()
+
+	nodes, cachedPaths = nil, nil
+	cachedNum = 0
+	
+	collectgarbage()
+	collectgarbage()
+end
+
 ----------------------------------------------------------------
 -- pathfinding functions
 ----------------------------------------------------------------
@@ -236,7 +245,7 @@ function astar.path ( start, goal )
 	end
 	
 	local paths = {}
-	for i, node in ipairs ( resPath ) do
+	for _, node in ipairs ( resPath ) do
 		table.insert ( paths, node.id )
 	end
 	
@@ -262,9 +271,10 @@ function astar.getNearestWp ( origin )
 
 	local nearestWp = -1
 	local nearestDist = 99999999999
+	local dist = nil
 	
 	for _, node in ipairs ( nodes ) do
-		local dist =  Vec3DistanceSq ( origin, node.origin )
+		dist =  Vec3DistanceSq ( origin, node.origin )
 		
 		if dist < nearestDist then
 			nearestDist = dist
@@ -277,9 +287,10 @@ end
 
 function astar.loadWaypoints ( filename )
 
+	clearAll ()
+	
 	nodes = {}
 	cachedPaths = {}
-	cachedNum = 0
 	
 	handle, err = io.open ( filename )
 	

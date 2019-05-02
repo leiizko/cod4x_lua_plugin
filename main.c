@@ -1,4 +1,5 @@
 #include "main.h"
+#include <math.h>
 
 void Sv_LoadLuaScript()
 {
@@ -38,7 +39,7 @@ void Global_LuaHandler( char *funcName )
 
 void Sv_LuaDebug()
 {
-	Plugin_Printf( "Bytes used: %i\n", lua_gc( LuaVM, LUA_GCCOUNT, 0 ) );
+	Plugin_Printf( "KBytes used: %i\n", lua_gc( LuaVM, LUA_GCCOUNT, 0 ) );
 	Plugin_Printf( "Elements on stack: %i\n", lua_gettop( LuaVM ) );
 }
 
@@ -64,7 +65,6 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Scr_ExecEntThread", Lua_Scr_ExecEntThread );
 	lua_register( LuaVM, "Plugin_Scr_ExecThread", Lua_Scr_ExecThread );
 	lua_register( LuaVM, "Plugin_Scr_FreeThread", Lua_Scr_FreeThread );
-	
 	// Get functions
 	lua_register( LuaVM, "Plugin_Scr_GetNumParam", Lua_Scr_GetNumParam );
 	lua_register( LuaVM, "Plugin_Scr_GetInt", Lua_Scr_GetInt );
@@ -73,9 +73,12 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Scr_GetEntity", Lua_Scr_GetEntity );
 	lua_register( LuaVM, "Plugin_Scr_GetType", Lua_Scr_GetType );
 	lua_register( LuaVM, "Plugin_Scr_GetVector", Lua_Scr_GetVector );
+	lua_register( LuaVM, "Plugin_Cmd_Argv", Lua_Cmd_Argv );
+	lua_register( LuaVM, "Plugin_Cmd_Argc", Lua_Cmd_Argc );
 	
 	// Utility
 	lua_register( LuaVM, "Plugin_Printf", Lua_Printf );
+	lua_register( LuaVM, "Plugin_DPrintf", Lua_DPrintf );
 	lua_register( LuaVM, "Plugin_GetVersion", Lua_GetPluginVersion );
 	lua_register( LuaVM, "Plugin_Milliseconds", Lua_GetMilliseconds );
 	lua_register( LuaVM, "Plugin_Scr_Error", Lua_Scr_Error );
@@ -99,7 +102,7 @@ PCL int OnInit()
 	DWORD old;
 	VirtualProtect( AllocMem, sizeof( AllocMem ), PAGE_EXECUTE_READWRITE, &old );
 #else
-	mprotect( AllocMem, sizeof( AllocMem ), PROT_EXEC | PROT_WRITE | PROT_READ ); // This valid?
+	mprotect( AllocMem, sizeof( AllocMem ), PROT_EXEC | PROT_WRITE | PROT_READ );
 #endif
 	
 	luaL_openlibs( LuaVM );
@@ -120,8 +123,8 @@ PCL void OnInfoRequest( pluginInfo_t *info )
 	info->pluginVersion.major = PLUGIN_VERSION_MAJOR;
 	info->pluginVersion.minor = PLUGIN_VERSION_MINOR;	
 	strncpy(info->fullName, "Lua plugin", sizeof(info->fullName));
-	strncpy(info->shortDescription, "Lua support", sizeof(info->shortDescription));
-	strncpy(info->longDescription, "Adds a Lua support to implement more efficient functions to be used within gsc scripts.", sizeof(info->longDescription));
+	strncpy(info->shortDescription, "Implements Lua based plugins", sizeof(info->shortDescription));
+	strncpy(info->longDescription, "Adds support for Lua based plugins, most suitable for adding script functions that are too expensive to run in GSC.", sizeof(info->longDescription));
 }
 
 static int Lua_Cmd_AddCommand( lua_State *L )
@@ -548,6 +551,40 @@ static int Lua_Scr_GetVector( lua_State *L )
 	return 1;
 }
 
+static int Lua_Cmd_Argc( lua_State *L )
+{
+	int c = Plugin_Cmd_Argc();
+	
+	lua_pushinteger( L, c );
+	
+	return 1;
+}
+
+static int Lua_Cmd_Argv( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cmd_Argv: takes exactly one argument!\n" );
+		return 1;
+	}
+	
+	if (!lua_isnumber( L, 1 )) 
+	{
+		luaL_error( L, "Plugin_Cmd_Argv: Argument must be an integer!\n" );
+		return 1;
+	}
+	
+	int i = lua_tointeger( L, 1 );
+	
+	char *result = Plugin_Cmd_Argv( i );
+	
+	lua_pushstring( L, result );
+	
+	return 1;
+}
+
 static int Lua_Scr_GetType( lua_State *L )
 {
 	int n = lua_gettop( L );
@@ -664,6 +701,26 @@ static int Lua_Printf( lua_State *L )
 	}
 
 	Plugin_Printf( (char *)lua_tostring( L, 1 ) );
+	
+	return 0;
+}
+
+static int Lua_DPrintf( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_DPrintf: Function takes exactly one parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_DPrintf: parameter must be a string!" );
+		return 1;
+	}
+
+	Plugin_DPrintf( (char *)lua_tostring( L, 1 ) );
 	
 	return 0;
 }

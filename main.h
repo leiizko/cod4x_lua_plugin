@@ -17,7 +17,7 @@
 #define MAX_FUNCTIONS 0x40
 #define STUB_SIZE 0x20
 #define PLUGIN_VERSION_MAJOR 0
-#define PLUGIN_VERSION_MINOR 1
+#define PLUGIN_VERSION_MINOR 2
 
 typedef unsigned int long DWORD;
 
@@ -57,9 +57,12 @@ static int Lua_Scr_GetString( lua_State *L );
 static int Lua_Scr_GetEntity( lua_State *L );
 static int Lua_Scr_GetType( lua_State *L );
 static int Lua_Scr_GetVector( lua_State *L );
+static int Lua_Cmd_Argv( lua_State *L );
+static int Lua_Cmd_Argc( lua_State *L );
 
 // Utility
 static int Lua_Printf( lua_State *L );
+static int Lua_DPrintf( lua_State *L );
 static int Lua_GetPluginVersion( lua_State *L );
 static int Lua_GetMilliseconds( lua_State *L );
 static int Lua_Scr_Error( lua_State *L );
