@@ -1,5 +1,5 @@
 # RotU-R Pathfinding
-This will replace GSC implementation of pathfinding with Lua one. It is up to 160 times faster on first search, generated paths get cached.
+This will replace GSC implementation of pathfinding with Lua one. Worse cases take up to 0.5msec to calculate, down from 160msec on GSC and after it is calcuated the path gets cached. At the moment cache is unlimited which can cause higher memory usage ( few MBytes ) but can be limited easily if needed. Access from cache, even when huge in size takes ~1usec.
 
 # Installing:
 * Place both Lua scripts into CoD4_Server_Dir/Lua
