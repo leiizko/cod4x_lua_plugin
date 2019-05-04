@@ -27,6 +27,9 @@ static int definedFunctions = 0;
 
 void Global_LuaHandler( char *funcName );
 void registerFunctionsToLua();
+static int Lua_TraceBack( lua_State* L );
+static int Plugin_Lua_pcall( lua_State* L, int nargs, int nret );
+
 
 // Register functions
 static int Lua_Cmd_AddCommand( lua_State *L );

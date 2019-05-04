@@ -13,26 +13,21 @@ void Sv_LoadLuaScript()
 	
 	if( !luaL_loadfile(LuaVM, scriptPath) )
 	{
-		if( !lua_pcall( LuaVM, 0, LUA_MULTRET, 0 ) )
+		if( !Plugin_Lua_pcall( LuaVM, 0, LUA_MULTRET ) )
 		{
 			Plugin_Printf( "lua_loadscript: Successfully started lua script %s\n", scriptPath );
 			return;
 		}
 	}
 
-	Plugin_Printf( "***** lua loadscript error: *****\n %s\n***** lua loadscript error *****\n", lua_tostring( LuaVM, -1 ) );
 	lua_settop( LuaVM, 0 );
-	//lua_close( LuaVM );
 }
 
 void Global_LuaHandler( char *funcName )
 {
 	lua_getglobal( LuaVM, funcName );
 	
-	if( lua_pcall( LuaVM, 0, LUA_MULTRET, 0 ) )
-	{
-		Plugin_Printf( "***** lua runtime error: *****\n %s\n***** lua runtime error *****\n", lua_tostring( LuaVM, -1 ) );
-	}
+	Plugin_Lua_pcall( LuaVM, 0, LUA_MULTRET );
 	
 	lua_settop( LuaVM, 0 );
 }
@@ -849,6 +844,31 @@ static int Lua_Scr_ParamError( lua_State *L )
 
 
 
+
+static int Lua_TraceBack( lua_State* L )
+{
+	Plugin_Printf( "****************** Lua Error: ******************\n\n%s\n", lua_tostring( L, -1 ) );
+	luaL_traceback( L, L, NULL, 1 );
+	
+	Plugin_Printf( "%s\n\n************************************************\n", lua_tostring( L, -1 ) );
+	
+	return 0;
+}
+
+static int Plugin_Lua_pcall( lua_State* L, int nargs, int nret )
+{
+	int hpos = lua_gettop( L ) - nargs;
+	 
+	lua_pushcfunction( L, Lua_TraceBack );
+	
+	lua_insert( L, hpos );
+	
+	int ret = lua_pcall( L, nargs, nret, hpos );
+	
+	lua_remove( L, hpos );
+	
+	return ret;
+}
 
 char *AllocStub( char *funcName )
 {
