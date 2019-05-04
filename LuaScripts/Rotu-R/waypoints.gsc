@@ -27,22 +27,15 @@ float(number){
 
 loadWaypoints()
 {
-	fileName =  "waypoints/"+ toLower(getDvar("mapname")) + "_wp.csv";
-	fileNameLua = getDvar( "fs_game" ) + "/" + fileName;
-	
 	if( isDefined( level.waypoints ) && level.waypoints.size > 0 ){ // In case the map has loaded its own waypoints already
-		if( !FS_TestFile( fileName ) )
-			dumpWp( fileName );
-		loadWaypoints_Internal( fileNameLua );
 		return;
 	}
-	
-	loadWaypoints_Internal( fileNameLua );
-	
+		
 	level.waypoints = [];
 	level.waypointCount = 0;
 	level.waypointLoops = 0;
 	
+	fileName =  "waypoints/"+ toLower(getDvar("mapname")) + "_wp.csv";
 /#	printLn( "Getting waypoints from csv: "+fileName );		#/
 
 	level.waypointCount = int( tableLookup(fileName, 0, 0, 1) );
@@ -84,7 +77,7 @@ draw_wp()
 	}
 }
 
-getNearestWp2( origin )
+getNearestWp( origin )
 {
   nearestWp = -1;
   nearestDistance = 9999999999;
@@ -104,7 +97,7 @@ getNearestWp2( origin )
 
 // ASTAR PATHFINDING ALGORITHM: CREDITS GO TO PEZBOTS!
 
-AStarSearch2( startWp, goalWp )
+AStarSearch( startWp, goalWp )
 {
 	pQOpen = [];
 	pQSize = 0;
@@ -312,54 +305,3 @@ drawWP()
 	}
 }
 
-dumpWp( path )
-{
-	dump = [];
-	
-	for( i = 0; i < level.waypoints.size; i++ )
-	{
-		dump[ i ] = "" + ( i + 1 ) + "," + dumpvec3( level.waypoints[ i ].origin ) + "," + dumpchildren( level.waypoints[ i ].children );
-	}
-	
-	writeToFile( path, dump );
-}
-
-dumpvec3( v )
-{
-	string = "" + v[ 0 ] + " " + v[ 1 ] + " " + v[ 2 ];
-	return string;
-}
-
-dumpchildren( c )
-{
-	string = "";
-	for( i = 0; i < c.size; i++ )
-	{
-		string += c[ i ] + " ";
-	}
-	
-	return string;
-}
-
-writeArray( handle, array )
-{
-	for( i = 0; i < array.size; i++ )
-		FS_WriteLine( handle, array[ i ] );
-}
-
-writeToFile( path, w )
-{
-	file = FS_FOpen( path, "write" );
-	
-	if( !isDefined( file ) )
-		return false;
-		
-	if( isArray( w ) )
-		writeArray( file, w );
-	else
-		FS_WriteLine( file, w );
-	
-	FS_FClose( file );
-	
-	return true;
-}
