@@ -40,7 +40,7 @@ local cachedNum = 0
 
 local function VectorLengthSquared ( vec3 )
 
-	return math.pow( vec3 [ 1 ], 2 ) +  math.pow( vec3 [ 2 ], 2 ) +  math.pow( vec3 [ 3 ], 2 )
+	return ( ( vec3 [ 1 ] * vec3 [ 1 ] ) + ( vec3 [ 2 ] * vec3 [ 2 ] ) + ( vec3 [ 3 ] * vec3 [ 3 ] ) )
 end
 
 local function VectorSubtract ( v1, v2 )

@@ -6,4 +6,4 @@ This will replace GSC implementation of pathfinding with Lua one. Worse cases ta
 * Load rotu.lua using lua_loadscript function in your server config file
 * Modify waypoints.gsc: 
 	- If you are using unmodified version of RoTu-R mod, simply drop [waypoints.gsc](https://github.com/leiizko/cod4x_lua_plugin/blob/master/LuaScripts/Rotu-R/waypoints.gsc) into Mod_Dir/scripts/include folder. If it doesn't exist create one.
-	- If you are using modified version make changes as shown in [waypoints.diff](https://github.com/leiizko/cod4x_lua_plugin/blob/master/LuaScripts/Rotu-R/waypoints.diff) file
+	- If you are using modified version make changes as shown in [this commit](https://github.com/leiizko/cod4x_lua_plugin/commit/35dde9db1fea393626eaf7c534fc7e15ca2c2ceb)
