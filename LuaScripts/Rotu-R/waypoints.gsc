@@ -321,8 +321,8 @@ dumpWp( path )
 	
 	for( i = 0; i < level.waypoints.size; i++ )
 	{
-		if( !isDefined( level.waypoints[ i ].children ) )
-			level.waypoints[ i ].children = i;
+		if( !isArray( level.waypoints[ i ].children ) )
+			level.waypoints[ i ].children[ 0 ] = ( i + 1 );
 		
 		dump[ i ] = "" + ( i + 1 ) + "," + dumpvec3( level.waypoints[ i ].origin ) + "," + dumpchildren( level.waypoints[ i ].children );
 		
