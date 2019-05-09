@@ -33,7 +33,8 @@ loadWaypoints()
 	if( isDefined( level.waypoints ) && level.waypoints.size > 0 ){ // In case the map has loaded its own waypoints already
 		if( !FS_TestFile( fileName ) )
 			dumpWp( fileName );
-		loadWaypoints_Internal( fileNameLua );
+		else
+			loadWaypoints_Internal( fileNameLua );
 		return;
 	}
 	
@@ -71,7 +72,8 @@ loadWaypoints()
 	
 	if( !FS_TestFile( fileName ) )
 		dumpWp( fileName );
-	loadWaypoints_Internal( fileNameLua );
+	else
+		loadWaypoints_Internal( fileNameLua );
 }
 
 draw_wp()
@@ -331,6 +333,8 @@ dumpWp( path )
 	}
 	
 	writeToFile( path, dump );
+	
+	loadWaypoints_Internal( getDvar( "fs_game" ) + "/" + path );
 }
 
 dumpvec3( v )
