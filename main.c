@@ -130,6 +130,9 @@ PCL void OnInfoRequest( pluginInfo_t *info )
 }
 
 #ifdef EICONV
+
+#define MAX_CD 3
+iconv_t cd_g[ MAX_CD ];
 static int Lua_iconv( lua_State *L )
 {
 	int n = lua_gettop( L );
@@ -140,15 +143,20 @@ static int Lua_iconv( lua_State *L )
 		return 1;
 	}
 	
-	if( !lua_islightuserdata( L, 1 ) )
+	if( !lua_isnumber ( L, 1 ) )
 	{
-		luaL_error( L, "Plugin_iconv: parameter 1 must be a iconv_t!" );
+		luaL_error( L, "Plugin_iconv: parameter 1 must be an integer!" );
 		return 1;
 	}
 	
-	iconv_t cd = *( iconv_t *)lua_touserdata( L, 1 );
+	int idx = lua_tointeger( L, 1 );
 	
-	
+	if( idx < 0 || idx >= MAX_CD || cd_g[ idx ] == NULL )
+	{
+		luaL_error( L, "Plugin_iconv: parameter 1 is invalid!" );
+		return 1;
+	}
+
 	if( !lua_isstring( L, 2 ) )
 	{
 		luaL_error( L, "Plugin_iconv: parameter 2 must be a string!" );
@@ -162,7 +170,7 @@ static int Lua_iconv( lua_State *L )
 	char *outbuf_start = outbufa;
 	size_t outbytesleft = 1024;
 	
-	size_t ret = iconv( cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft );
+	size_t ret = iconv( cd_g[ idx ], &inbuf, &inbytesleft, &outbuf, &outbytesleft );
 	if( ret == ( size_t )( -1 ) )
 	{
 		if( errno == EILSEQ )
@@ -186,6 +194,7 @@ static int Lua_iconv( lua_State *L )
 			return 1;
 		}
 	}
+	*outbuf = '\0';
 	lua_pushstring( L, outbuf_start );
 	return 1;
 }
@@ -200,21 +209,28 @@ static int Lua_iconv_close( lua_State *L )
 		return 1;
 	}
 	
-	if( !lua_islightuserdata( L, 1 ) )
+	if( !lua_isnumber ( L, 1 ) )
 	{
-		luaL_error( L, "Plugin_iconv_close: parameter 1 must be a iconv_t!" );
+		luaL_error( L, "Plugin_iconv_close: parameter 1 must be an integer!" );
 		return 1;
 	}
 	
-	iconv_t cd = ( iconv_t *)lua_touserdata( L, 1 );
+	int idx = lua_tointeger( L, 1 );
 	
-	int status = iconv_close( cd );
+	if( idx < 0 || idx >= MAX_CD || cd_g[ idx ] == NULL )
+	{
+		luaL_error( L, "Plugin_iconv_close: parameter 1 is invalid!" );
+		return 1;
+	}
+	
+	int status = iconv_close( cd_g[ idx ] );
 	if( status == -1 )
 	{
 		luaL_error( L, "Plugin_iconv_close: Unknown error!" );
 		return 1;
 	}
 	
+	cd_g[ idx ] = NULL;
 	lua_pushinteger( L, status );
 	
 	return 1;
@@ -246,11 +262,26 @@ static int Lua_iconv_open( lua_State *L )
 	
 	const char *fromCode = (const char *)lua_tostring( L, 2 );
 	
-	iconv_t cd = iconv_open( toCode, fromCode );
-	
-	if( cd != ( iconv_t )( -1 ) )
+	int idx = -1;
+	for( int i = 0; i < MAX_CD; i++ )
 	{
-		lua_pushlightuserdata( L, &cd );
+		if( cd_g[ i ] == NULL )
+		{
+			idx = i;
+			break;
+		}
+	}
+	if( idx < 0 )
+	{
+		luaL_error( L, "Plugin_iconv_open: No free conversion slots!" );
+		return 1;
+	}
+	
+	cd_g[ idx ]= iconv_open( toCode, fromCode );
+	
+	if( cd_g[ idx ] != ( iconv_t )( -1 ) )
+	{
+		lua_pushinteger( L, idx );
 		return 1;
 	}
 	else
