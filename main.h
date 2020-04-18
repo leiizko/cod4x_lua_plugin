@@ -7,6 +7,11 @@
 #include "inc/lauxlib.h"
 #include <stdlib.h>
 
+#ifdef EICONV
+#include <iconv.h>
+#include <errno.h>
+#endif // EICONV
+
 #ifdef _WIN32
 	#include <memoryapi.h>
 #else
@@ -17,7 +22,7 @@
 #define MAX_FUNCTIONS 0x40
 #define STUB_SIZE 0x20
 #define PLUGIN_VERSION_MAJOR 0
-#define PLUGIN_VERSION_MINOR 2
+#define PLUGIN_VERSION_MINOR 3
 
 typedef unsigned int long DWORD;
 
@@ -73,7 +78,12 @@ static int Lua_Scr_ParamError( lua_State *L );
 static int Lua_Scr_ObjectError( lua_State *L );
 static int Lua_Error( lua_State *L );
 
-
+// iconv
+#ifdef EICONV
+static int Lua_iconv_open( lua_State *L );
+static int Lua_iconv_close( lua_State *L );
+static int Lua_iconv( lua_State *L );
+#endif // EICONV
 
 void *aligned_malloc( int size, int ALIGN );
 char *AllocStub( char *funcName );

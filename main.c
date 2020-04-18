@@ -80,6 +80,13 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Scr_ParamError", Lua_Scr_ParamError );
 	lua_register( LuaVM, "Plugin_Scr_ObjectError", Lua_Scr_ObjectError );
 	lua_register( LuaVM, "Plugin_Error", Lua_Error );
+	
+	// iconv
+#ifdef EICONV
+	lua_register( LuaVM, "Plugin_iconv_open", Lua_iconv_open );
+	lua_register( LuaVM, "Plugin_iconv_close", Lua_iconv_close );
+	lua_register( LuaVM, "Plugin_iconv", Lua_iconv );
+#endif // EICONV
 }
 
 PCL int OnInit()
@@ -121,6 +128,146 @@ PCL void OnInfoRequest( pluginInfo_t *info )
 	strncpy(info->shortDescription, "Implements Lua based plugins", sizeof(info->shortDescription));
 	strncpy(info->longDescription, "Adds support for Lua based plugins, most suitable for adding script functions that are too expensive to run in GSC.", sizeof(info->longDescription));
 }
+
+#ifdef EICONV
+static int Lua_iconv( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_iconv: Function requires exactly 2 parameters!" );
+		return 1;
+	}
+	
+	if( !lua_islightuserdata( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_iconv: parameter 1 must be a iconv_t!" );
+		return 1;
+	}
+	
+	iconv_t cd = *( iconv_t *)lua_touserdata( L, 1 );
+	
+	
+	if( !lua_isstring( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_iconv: parameter 2 must be a string!" );
+		return 1;
+	}
+	
+	char *inbuf = (char *)lua_tostring( L, 2 );
+	size_t inbytesleft = lua_objlen( L, 2 );
+	char outbufa[ 1024 ];
+	char *outbuf = outbufa;
+	char *outbuf_start = outbufa;
+	size_t outbytesleft = 1024;
+	
+	size_t ret = iconv( cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft );
+	if( ret == ( size_t )( -1 ) )
+	{
+		if( errno == EILSEQ )
+		{
+			luaL_error( L, "Plugin_iconv: An invalid multibyte sequence is encountered in the input!" );
+			return 1;
+		}
+		else if( errno == EINVAL )
+		{
+			luaL_error( L, "Plugin_iconv: An incomplete multibyte sequence is encountered in the input!" );
+			return 1;
+		}
+		else if( errno == E2BIG )
+		{
+			luaL_error( L, "Plugin_iconv: The output buffer has no more room for the next converted character!" );
+			return 1;
+		}
+		else
+		{
+			luaL_error( L, "Plugin_iconv: Unknown error!" );
+			return 1;
+		}
+	}
+	lua_pushstring( L, outbuf_start );
+	return 1;
+}
+
+static int Lua_iconv_close( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_iconv_close: Function requires exactly 1 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_islightuserdata( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_iconv_close: parameter 1 must be a iconv_t!" );
+		return 1;
+	}
+	
+	iconv_t cd = ( iconv_t *)lua_touserdata( L, 1 );
+	
+	int status = iconv_close( cd );
+	if( status == -1 )
+	{
+		luaL_error( L, "Plugin_iconv_close: Unknown error!" );
+		return 1;
+	}
+	
+	lua_pushinteger( L, status );
+	
+	return 1;
+}
+
+static int Lua_iconv_open( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_iconv_open: Function requires exactly 2 parameters!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_iconv_open: parameter 1 must be a string!" );
+		return 1;
+	}
+	
+	const char *toCode = (const char *)lua_tostring( L, 1 );
+	
+	if( !lua_isstring( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_iconv_open: parameter 2 must be a string!" );
+		return 1;
+	}
+	
+	const char *fromCode = (const char *)lua_tostring( L, 2 );
+	
+	iconv_t cd = iconv_open( toCode, fromCode );
+	
+	if( cd != ( iconv_t )( -1 ) )
+	{
+		lua_pushlightuserdata( L, &cd );
+		return 1;
+	}
+	else
+	{
+		if( errno == EINVAL )
+		{
+			luaL_error( L, "Plugin_iconv_open: The conversion from fromcode to tocode is not supported!" );
+			return 1;
+		}
+		else
+		{
+			luaL_error( L, "Plugin_iconv_open: Unknown error!" );
+			return 1;
+		}
+	}
+}
+#endif // EICONV
 
 static int Lua_Cmd_AddCommand( lua_State *L )
 {

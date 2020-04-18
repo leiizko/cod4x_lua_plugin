@@ -5,7 +5,7 @@ TARGET_NAME=lua
 ifeq ($(OS),Windows_NT)
 EXT=dll
 CFLAGS=-m32 -Wall -O1 -g -mtune=core2
-LFLAGS=-m32 -g -shared -static-libgcc -static-libstdc++ 
+LFLAGS=-m32 -g -shared -static-libgcc -static-libstdc++
 LIBS=-L.. -lcom_plugin -L./LuaJIT/src -lluajit
 CLEAN = del *.o
 else
@@ -16,10 +16,18 @@ LIBS=-L./LuaJIT/src -lluajit
 CLEAN = rm *.o
 endif
 
+ifeq ($(ICONV),true)
+DFLAGS=-DEICONV
+CONVLIB=-liconv
+else
+DFLAGS=
+CONVLIB=
+endif
+
 all: 
 	$(MAKE) -C LuaJIT/src
-	$(CC) $(CFLAGS) -c *.c
-	$(CC) $(LFLAGS) -o $(TARGET_NAME).$(EXT) *.o $(LIBS)
+	$(CC) $(CFLAGS) $(DFLAGS) -c *.c
+	$(CC) $(LFLAGS) -o $(TARGET_NAME).$(EXT) *.o $(LIBS) $(CONVLIB) 
 	
 clean:
 	$(CLEAN)
