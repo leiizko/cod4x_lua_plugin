@@ -6,11 +6,7 @@
 #include "inc/lualib.h"
 #include "inc/lauxlib.h"
 #include <stdlib.h>
-
-#ifdef EICONV
-#include <iconv.h>
-#include <errno.h>
-#endif // EICONV
+#include <math.h>
 
 #ifdef _WIN32
 	#include <memoryapi.h>
@@ -26,64 +22,13 @@
 
 typedef unsigned int long DWORD;
 
-static lua_State *LuaVM;
-static char *AllocMem = NULL;
-static int definedFunctions = 0;
+extern lua_State *LuaVM;
+extern char *AllocMem;
+extern int definedFunctions;
 
+int Lua_TraceBack( lua_State* L );
+int Plugin_Lua_pcall( lua_State* L, int nargs, int nret );
 void Global_LuaHandler( char *funcName );
-void registerFunctionsToLua();
-static int Lua_TraceBack( lua_State* L );
-static int Plugin_Lua_pcall( lua_State* L, int nargs, int nret );
-
-
-// Register functions
-static int Lua_Cmd_AddCommand( lua_State *L );
-static int Lua_ScrAddFunction( lua_State *L );
-
-// Add functions
-static int Lua_Scr_AddEntity( lua_State *L );
-static int Lua_Scr_AddInt( lua_State *L );
-static int Lua_Scr_AddFloat( lua_State *L );
-static int Lua_Scr_AddBool( lua_State *L );
-static int Lua_Scr_AddString( lua_State *L );
-static int Lua_Scr_AddUndefined( lua_State *L );
-static int Lua_Scr_AddVector( lua_State *L );
-static int Lua_Scr_AddArray( lua_State *L );
-static int Lua_Scr_MakeArray( lua_State *L );
-static int Lua_Scr_AddArrayKeys( lua_State *L );
-
-// Script threads
-static int Lua_Scr_ExecEntThread( lua_State *L );
-static int Lua_Scr_ExecThread( lua_State *L );
-static int Lua_Scr_FreeThread( lua_State *L );
-
-// Get functions
-static int Lua_Scr_GetNumParam( lua_State *L );
-static int Lua_Scr_GetInt( lua_State *L );
-static int Lua_Scr_GetFloat( lua_State *L );
-static int Lua_Scr_GetString( lua_State *L );
-static int Lua_Scr_GetEntity( lua_State *L );
-static int Lua_Scr_GetType( lua_State *L );
-static int Lua_Scr_GetVector( lua_State *L );
-static int Lua_Cmd_Argv( lua_State *L );
-static int Lua_Cmd_Argc( lua_State *L );
-
-// Utility
-static int Lua_Printf( lua_State *L );
-static int Lua_DPrintf( lua_State *L );
-static int Lua_GetPluginVersion( lua_State *L );
-static int Lua_GetMilliseconds( lua_State *L );
-static int Lua_Scr_Error( lua_State *L );
-static int Lua_Scr_ParamError( lua_State *L );
-static int Lua_Scr_ObjectError( lua_State *L );
-static int Lua_Error( lua_State *L );
-
-// iconv
-#ifdef EICONV
-static int Lua_iconv_open( lua_State *L );
-static int Lua_iconv_close( lua_State *L );
-static int Lua_iconv( lua_State *L );
-#endif // EICONV
 
 void *aligned_malloc( int size, int ALIGN );
 char *AllocStub( char *funcName );
