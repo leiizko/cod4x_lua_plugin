@@ -64,6 +64,7 @@ PCL int OnInit()
 	luaL_openlibs( LuaVM );
 	
 	registerFunctionsToLua();
+	httpInit();
 	
 	Plugin_AddCommand( "lua_loadscript", Sv_LoadLuaScript, 0 );
 	Plugin_AddCommand( "lua_debug", Sv_LuaDebug, 0 );
@@ -196,9 +197,16 @@ PCL void OnPlayerDC(client_t* client, const char* reason)
 	
 	if( lua_isfunction( LuaVM, -1 ) )
 	{
-		lua_pushinteger( LuaVM, Plugin_GetClientNumForClient( client ) );
+		char pid[128];
+		char sid[128];
+		Plugin_SteamIDToString( client->playerid, pid, sizeof( pid ) );
+		Plugin_SteamIDToString( client->steamid, sid, sizeof( sid ) );
 		
-		Plugin_Lua_pcall( LuaVM, 1, LUA_MULTRET );	
+		lua_pushinteger( LuaVM, Plugin_GetClientNumForClient( client ) );
+		lua_pushstring( LuaVM, pid );
+		lua_pushstring( LuaVM, sid );
+		
+		Plugin_Lua_pcall( LuaVM, 3, LUA_MULTRET );	
 	}
 	
 	lua_settop( LuaVM, 0 );
@@ -206,6 +214,8 @@ PCL void OnPlayerDC(client_t* client, const char* reason)
 
 PCL void OnFrame()
 {
+	Lua_HTTP_updateRequests();
+	
 	lua_getglobal( LuaVM, "OnFrame" );
 	
 	if( lua_isfunction( LuaVM, -1 ) )
@@ -216,41 +226,23 @@ PCL void OnFrame()
 	lua_settop( LuaVM, 0 );
 }
 
-PCL void OnPlayerWantReservedSlot(netadr_t* from, char* pbguid, char* userinfo, int authstate, qboolean *isallowed)
+PCL void OnPlayerGotAuthInfo(netadr_t* from, uint64_t* playerid, uint64_t *steamid, char *rejectmsg, qboolean *returnNow, client_t* cl)
 {
-	lua_getglobal( LuaVM, "OnPlayerWantReservedSlot" );
+	lua_getglobal( LuaVM, "OnPlayerGotAuthInfo" );
 	
 	if( lua_isfunction( LuaVM, -1 ) )
 	{
-		lua_pushstring( LuaVM, pbguid );
-		lua_pushstring( LuaVM, userinfo );
-		lua_pushinteger( LuaVM, (int)*isallowed );
+		char pid[128];
+		char sid[128];
+		Plugin_SteamIDToString( cl->playerid, pid, sizeof( pid ) );
+		Plugin_SteamIDToString( cl->steamid, sid, sizeof( sid ) );
 		
-		Plugin_Lua_pcall( LuaVM, 3, LUA_MULTRET );	
-	}
-	
-	if( lua_isnumber( LuaVM, -1 ) )
-	{	
-		if( lua_tonumber( LuaVM, -1 ) > 0 )
-		{
-			*isallowed = qtrue;
-		}
-	}
-	
-	lua_settop( LuaVM, 0 );
-}
-
-PCL void OnPlayerConnect(int clientnum, netadr_t* netaddress, char* pbguid, char* userinfo, int authstatus, char* deniedmsg, int deniedmsgbufmaxlen)
-{
-	lua_getglobal( LuaVM, "OnPlayerConnect" );
-	
-	if( lua_isfunction( LuaVM, -1 ) )
-	{
-		lua_pushstring( LuaVM, pbguid );
-		lua_pushstring( LuaVM, userinfo );
-		lua_pushinteger( LuaVM, clientnum );
+		lua_pushinteger( LuaVM, Plugin_GetClientNumForClient( cl ) );
+		lua_pushstring( LuaVM, pid );
+		lua_pushstring( LuaVM, sid );
+		lua_pushstring( LuaVM, rejectmsg );
 		
-		Plugin_Lua_pcall( LuaVM, 3, LUA_MULTRET );	
+		Plugin_Lua_pcall( LuaVM, 4, LUA_MULTRET );	
 	}
 	
 	lua_settop( LuaVM, 0 );
