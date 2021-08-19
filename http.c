@@ -62,6 +62,7 @@ int Lua_HTTP_makeRequest( lua_State *L )
 	
 	if( r == NULL )
 	{
+		Plugin_DPrintf( "Lua HTTP: max open requests reached!\n" );
 		lua_pushinteger( L, 0 );
 		return 1;
 	}
@@ -78,6 +79,7 @@ int Lua_HTTP_makeRequest( lua_State *L )
 	
 	if( r->request == NULL )
 	{
+		Plugin_DPrintf( "Lua HTTP: Could not open new http request!\n" );
 		lua_pushinteger( L, 0 );
 		return 1;
 	}
@@ -101,7 +103,14 @@ void Lua_HTTP_updateRequests()
 			
 			lua_getglobal( LuaVM, r->callback );
 			
-			lua_pushstring( LuaVM, (char *)data );
+			if( errCode == 1 )
+			{
+				lua_pushstring( LuaVM, (char *)data );
+			}
+			else
+			{
+				lua_pushstring( LuaVM, NULL );
+			}
 			Plugin_Lua_pcall( LuaVM, 1, LUA_MULTRET );
 			
 			lua_settop( LuaVM, 0 );

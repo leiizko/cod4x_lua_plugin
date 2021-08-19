@@ -6,7 +6,6 @@
 typedef struct
 {
 	ftRequest_t* request;
-	int errCode;
 	char* callback;
 } lua_httpReq;
 
