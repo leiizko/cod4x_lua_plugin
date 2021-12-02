@@ -50,7 +50,7 @@ int Lua_HTTP_makeRequest( lua_State *L )
 		method = (char *)lua_tostring( L, 4 );
 	}
 	
-	lua_httpReq* r;
+	lua_httpReq* r = NULL;
 	for( int i = 0; i < LUA_HTTP_MAXOPENREQUESTS; ++i )
 	{
 		if( openRequests[ i ].request == NULL )
@@ -126,6 +126,9 @@ void Lua_HTTP_updateRequests()
 		}
 		
 		i++;
+		if( i == LUA_HTTP_MAXOPENREQUESTS )
+			break;
+
 		r = &openRequests[ i ];
 	}
 }

@@ -247,3 +247,55 @@ PCL void OnPlayerGotAuthInfo(netadr_t* from, uint64_t* playerid, uint64_t *steam
 	
 	lua_settop( LuaVM, 0 );
 }
+
+PCL void OnSpawnServer()
+{
+	lua_getglobal( LuaVM, "OnSpawnServer" );
+	
+	if( lua_isfunction( LuaVM, -1 ) )
+	{
+		Plugin_Lua_pcall( LuaVM, 0, LUA_MULTRET );	
+	}
+	
+	lua_settop( LuaVM, 0 );
+}
+
+PCL void OnPostFastRestart()
+{
+	lua_getglobal( LuaVM, "OnPostFastRestart" );
+	
+	if( lua_isfunction( LuaVM, -1 ) )
+	{
+		Plugin_Lua_pcall( LuaVM, 0, LUA_MULTRET );	
+	}
+	
+	lua_settop( LuaVM, 0 );
+}
+
+PCL void OnExitLevel()
+{
+	lua_getglobal( LuaVM, "OnExitLevel" );
+	
+	if( lua_isfunction( LuaVM, -1 ) )
+	{
+		Plugin_Lua_pcall( LuaVM, 0, LUA_MULTRET );	
+	}
+	
+	lua_settop( LuaVM, 0 );
+}
+
+PCL void OnMessageSent(char* message, int slot, qboolean *show, int mode)
+{
+	lua_getglobal( LuaVM, "OnMessageSent" );
+	
+	if( lua_isfunction( LuaVM, -1 ) )
+	{
+		lua_pushstring( LuaVM, message );
+		lua_pushinteger( LuaVM, slot );
+		lua_pushboolean( LuaVM, (bool)show );
+		lua_pushinteger( LuaVM, mode );
+		Plugin_Lua_pcall( LuaVM, 4, LUA_MULTRET );	
+	}
+	
+	lua_settop( LuaVM, 0 );
+}

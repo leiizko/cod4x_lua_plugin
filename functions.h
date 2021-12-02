@@ -39,6 +39,9 @@ int Lua_Scr_GetType( lua_State *L );
 int Lua_Scr_GetVector( lua_State *L );
 int Lua_Cmd_Argv( lua_State *L );
 int Lua_Cmd_Argc( lua_State *L );
+int Lua_Cmd_Args( lua_State *L );
+//int Lua_Scr_GetFunc( lua_State *L );
+int Lua_Cmd_GetInvokerSlot( lua_State *L );
 
 // Utility
 int Lua_Printf( lua_State *L );
@@ -49,6 +52,38 @@ int Lua_Scr_Error( lua_State *L );
 int Lua_Scr_ParamError( lua_State *L );
 int Lua_Scr_ObjectError( lua_State *L );
 int Lua_Error( lua_State *L );
+int Lua_GetGentityForClientNum( lua_State *L );
+int Lua_GetClientNumForGentity( lua_State *L );
+int Lua_GetPlayerName( lua_State *L );
+int Lua_DropClient( lua_State *L );
+int Lua_BanClient( lua_State *L );
+int Lua_GetClientScoreboard( lua_State *L );
+int Lua_Scr_AllocString( lua_State *L );
+int Lua_SV_SetConfigstring( lua_State *L );
+int Lua_SV_GetConfigstring( lua_State *L );
+
+// Cvars
+int Lua_Cvar_RegisterString( lua_State *L );
+int Lua_Cvar_RegisterBool( lua_State *L );
+int Lua_Cvar_RegisterInt( lua_State *L );
+int Lua_Cvar_RegisterFloat( lua_State *L );
+int Lua_Cvar_SetString( lua_State *L );
+int Lua_Cvar_SetBool( lua_State *L );
+int Lua_Cvar_SetInt( lua_State *L );
+int Lua_Cvar_SetFloat( lua_State *L );
+int Lua_Cvar_GetString( lua_State *L );
+int Lua_Cvar_GetBool( lua_State *L );
+int Lua_Cvar_GetInt( lua_State *L );
+int Lua_Cvar_GetFloat( lua_State *L );
+int Lua_VariableStringBuffer( lua_State *L );
+int Lua_Cvar_VariableValue( lua_State *L );
+int Lua_Cvar_VariableIntegerValue( lua_State *L );
+int Lua_Cvar_VariableBooleanValue( lua_State *L );
+int Lua_Cvar_Set( lua_State *L );
+
+// Notifies
+int Lua_Scr_NotifyLevel( lua_State *L );
+int Lua_Scr_Notify( lua_State *L );
 
 // iconv
 #ifdef EICONV

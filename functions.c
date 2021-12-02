@@ -23,6 +23,7 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Scr_ExecEntThread", Lua_Scr_ExecEntThread );
 	lua_register( LuaVM, "Plugin_Scr_ExecThread", Lua_Scr_ExecThread );
 	lua_register( LuaVM, "Plugin_Scr_FreeThread", Lua_Scr_FreeThread );
+
 	// Get functions
 	lua_register( LuaVM, "Plugin_Scr_GetNumParam", Lua_Scr_GetNumParam );
 	lua_register( LuaVM, "Plugin_Scr_GetInt", Lua_Scr_GetInt );
@@ -33,6 +34,10 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Scr_GetVector", Lua_Scr_GetVector );
 	lua_register( LuaVM, "Plugin_Cmd_Argv", Lua_Cmd_Argv );
 	lua_register( LuaVM, "Plugin_Cmd_Argc", Lua_Cmd_Argc );
+	lua_register( LuaVM, "Plugin_Cmd_Args", Lua_Cmd_Args );
+//	lua_register( LuaVM, "Plugin_Scr_GetFunc", Lua_Scr_GetFunc );
+	lua_register( LuaVM, "Plugin_Cmd_GetInvokerSlot", Lua_Cmd_GetInvokerSlot );
+
 	
 	// Utility
 	lua_register( LuaVM, "Plugin_Printf", Lua_Printf );
@@ -43,6 +48,38 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Scr_ParamError", Lua_Scr_ParamError );
 	lua_register( LuaVM, "Plugin_Scr_ObjectError", Lua_Scr_ObjectError );
 	lua_register( LuaVM, "Plugin_Error", Lua_Error );
+	lua_register( LuaVM, "Plugin_GetGentityForClientNum", Lua_GetGentityForClientNum );
+	lua_register( LuaVM, "Plugin_GetClientNumForGentity", Lua_GetClientNumForGentity );
+	lua_register( LuaVM, "Plugin_GetPlayerName", Lua_GetPlayerName );
+	lua_register( LuaVM, "Plugin_DropClient", Lua_DropClient );
+	lua_register( LuaVM, "Plugin_BanClient", Lua_BanClient );
+	lua_register( LuaVM, "Plugin_GetClientScoreboard", Lua_GetClientScoreboard );
+	lua_register( LuaVM, "Plugin_Scr_AllocString", Lua_Scr_AllocString );
+	lua_register( LuaVM, "Plugin_SV_SetConfigstring", Lua_SV_SetConfigstring );
+	lua_register( LuaVM, "Plugin_SV_GetConfigstring", Lua_SV_GetConfigstring );
+
+	// Cvars
+	lua_register( LuaVM, "Plugin_Cvar_RegisterString", Lua_Cvar_RegisterString );
+	lua_register( LuaVM, "Plugin_Cvar_RegisterBool", Lua_Cvar_RegisterBool );
+	lua_register( LuaVM, "Plugin_Cvar_RegisterInt", Lua_Cvar_RegisterInt );
+	lua_register( LuaVM, "Plugin_Cvar_RegisterFloat", Lua_Cvar_RegisterFloat );
+	lua_register( LuaVM, "Plugin_Cvar_SetString", Lua_Cvar_SetString );
+	lua_register( LuaVM, "Plugin_Cvar_SetBool", Lua_Cvar_SetBool );
+	lua_register( LuaVM, "Plugin_Cvar_SetInt", Lua_Cvar_SetInt );
+	lua_register( LuaVM, "Plugin_Cvar_SetFloat", Lua_Cvar_SetFloat );
+	lua_register( LuaVM, "Plugin_Cvar_GetString", Lua_Cvar_GetString );
+	lua_register( LuaVM, "Plugin_Cvar_GetBool", Lua_Cvar_GetBool );
+	lua_register( LuaVM, "Plugin_Cvar_GetInt", Lua_Cvar_GetInt );
+	lua_register( LuaVM, "Plugin_Cvar_GetFloat", Lua_Cvar_GetFloat );
+	lua_register( LuaVM, "Plugin_Cvar_VariableStringBuffer", Lua_VariableStringBuffer );
+	lua_register( LuaVM, "Plugin_Cvar_VariableValue", Lua_Cvar_VariableValue );
+	lua_register( LuaVM, "Plugin_Cvar_VariableIntegerValue", Lua_Cvar_VariableIntegerValue );
+	lua_register( LuaVM, "Plugin_Cvar_VariableBooleanValue", Lua_Cvar_VariableBooleanValue );
+	lua_register( LuaVM, "Plugin_Cvar_Set", Lua_Cvar_Set );
+
+	// Notifies
+	lua_register( LuaVM, "Plugin_Scr_NotifyLevel", Lua_Scr_NotifyLevel );
+	lua_register( LuaVM, "Plugin_Scr_Notify", Lua_Scr_Notify );
 	
 	// iconv
 #ifdef EICONV
@@ -240,7 +277,7 @@ int Lua_Cmd_AddCommand( lua_State *L )
 	}
 	char *funcName = (char *)lua_tostring( L, 1 );
 	
-	if (!lua_isstring( L, 2 ) ) 
+	if (!lua_isnumber( L, 2 ) ) 
 	{
 		luaL_error( L, "Plugin_AddCommand: parameter 2 must be an integer!" );
 		return 1;
@@ -368,7 +405,7 @@ int Lua_Scr_AddBool( lua_State *L )
 		return 1;
 	}
 	
-	qboolean add = lua_toboolean( L, 1 );
+	qboolean add = (qboolean)lua_toboolean( L, 1 );
 	
 	Plugin_Scr_AddBool( add );
 	
@@ -656,6 +693,16 @@ int Lua_Cmd_Argc( lua_State *L )
 	return 1;
 }
 
+int Lua_Cmd_Args( lua_State *L )
+{
+	char tmp[ 256 ];
+	Plugin_Cmd_Args( tmp, sizeof( tmp ) );
+	
+	lua_pushstring( L, tmp );
+	
+	return 1;
+}
+
 int Lua_Cmd_Argv( lua_State *L )
 {
 	int n = lua_gettop( L );
@@ -777,6 +824,42 @@ int Lua_Scr_GetEntity( lua_State *L )
 	gentity_t *result = Plugin_Scr_GetEntity( i );
 	
 	lua_pushlightuserdata( L, result );
+	
+	return 1;
+}
+
+/*
+int Lua_Scr_GetFunc( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Scr_GetFunc: takes exactly one argument!\n" );
+		return 1;
+	}
+	
+	if (!lua_isnumber( L, 1 )) 
+	{
+		luaL_error( L, "Plugin_Scr_GetFunc: Argument must be an integer!\n" );
+		return 1;
+	}
+	
+	int i = lua_tointeger( L, 1 );
+	
+	int result = Scr_GetFunc( i );
+	
+	lua_pushinteger( L, result );
+	
+	return 1;
+}
+*/
+
+int Lua_Cmd_GetInvokerSlot( lua_State *L )
+{
+	int invoker = Plugin_Cmd_GetInvokerSlot();
+
+	lua_pushinteger( L, invoker );
 	
 	return 1;
 }
@@ -940,5 +1023,882 @@ int Lua_Scr_ParamError( lua_State *L )
 
 	Plugin_Scr_ParamError( i, string );
 	
+	return 0;
+}
+
+int Lua_GetGentityForClientNum( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_GetGentityForClientNum: Function takes exactly 1 parameter!" );
+		return 1;
+	}
+
+	if( !lua_isnumber( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_GetGentityForClientNum: parameter 1 must be an int!" );
+		return 1;
+	}
+	
+	int i = lua_tointeger( L, 1 );
+
+	client_t *cl = Plugin_GetClientForClientNum( i );
+	if( cl == NULL )
+	{
+		lua_pushnil( L );
+		Plugin_Printf( "Plugin_GetGentityForClientNum: invalid client num!\n" );
+		return 1;
+	}
+
+	gentity_t *ent = cl->gentity;
+
+	lua_pushlightuserdata( L, ent );
+
+	return 1;
+}
+
+int Lua_GetClientNumForGentity( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_GetClientNumForGentity: takes exactly one argument!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_GetClientNumForGentity: Argument 1 must be an gentity_t!\n" );
+		return 1;
+	}
+	
+	gentity_t* ent = (gentity_t*)lua_touserdata( L, 1 );
+
+	if( ent->client == NULL )
+	{
+		lua_pushnil( L );
+		Plugin_Printf( "Plugin_GetClientNumForGentity: invalid client num!\n" );
+		return 1;
+	}
+	
+	int cnum = ent->client->sess.cs.clientIndex;
+
+	lua_pushinteger( L, cnum );
+	
+	return 1;
+}
+
+int Lua_GetPlayerName( lua_State *L )
+{
+	int n = lua_gettop( L );
+
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_GetPlayerName: Function takes 1 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isnumber( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_GetPlayerName: parameter 1 must be an int!" );
+		return 1;
+	}
+	
+	int i = lua_tointeger( L, 1 );
+
+	char *name = Plugin_GetPlayerName( i );
+
+	lua_pushstring( L, name );
+
+	return 1;
+}
+
+int Lua_DropClient( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_DropClient: Function takes two parameters!" );
+		return 1;
+	}
+	
+	if( !lua_isnumber( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_DropClient: parameter 1 must be an int!" );
+		return 1;
+	}
+	int cnum = lua_tointeger( L, 1 );
+	
+	if ( !lua_isstring( L, 2 ) ) 
+	{
+		luaL_error( L, "Plugin_DropClient: parameter 2 must be a string!" );
+		return 1;
+	}
+	const char *reason = (const char *)lua_tostring( L, 2 );
+
+	Plugin_DropClient( cnum, reason );
+	
+	return 0;
+}
+
+int Lua_BanClient( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 4 )
+	{
+		luaL_error( L, "Plugin_BanClient: Function takes 4 parameters!" );
+		return 1;
+	}
+	
+	if( !lua_isnumber( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_BanClient: parameter 1 must be an int!" );
+		return 1;
+	}
+	int cnum = lua_tointeger( L, 1 );
+
+	if( !lua_isnumber( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_BanClient: parameter 2 must be an int!" );
+		return 1;
+	}
+	int time = lua_tointeger( L, 2 );
+
+	if( !lua_isnumber( L, 3 ) )
+	{
+		luaL_error( L, "Plugin_BanClient: parameter 3 must be an int!" );
+		return 1;
+	}
+	int iid = lua_tointeger( L, 3 );
+	
+	if ( !lua_isstring( L, 4 ) ) 
+	{
+		luaL_error( L, "Plugin_DropClient: parameter 4 must be a string!" );
+		return 1;
+	}
+	char *reason = (char *)lua_tostring( L, 4 );
+
+	Plugin_BanClient( cnum, time, iid, reason );
+	
+	return 0;
+}
+
+int Lua_GetClientScoreboard( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_GetClientScoreboard: Function takes 1 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isnumber( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_GetClientScoreboard: parameter 1 must be an int!" );
+		return 1;
+	}
+	int cnum = lua_tointeger( L, 1 );
+
+	clientScoreboard_t sb = Plugin_GetClientScoreboard( cnum );
+
+	lua_newtable( L );
+	lua_pushinteger( L, sb.kills );
+	lua_setfield( L, -2, "kills" );
+	lua_pushinteger( L, sb.assists );
+	lua_setfield( L, -2, "assists" );
+	lua_pushinteger( L, sb.deaths );
+	lua_setfield( L, -2, "deaths" );
+	lua_pushinteger( L, sb.score );
+	lua_setfield( L, -2, "score" );
+	
+	return 1;
+}
+
+int Lua_Scr_AllocString( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Scr_AllocString: Function takes 1 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_GetClientScoreboard: parameter 1 must be a string!" );
+		return 1;
+	}
+	const char *str = (const char*)lua_tostring( L, 1 );
+
+	int i = Plugin_Scr_AllocString( str );
+
+	lua_pushinteger( L, i );
+	
+	return 1;
+}
+
+int Lua_SV_SetConfigstring( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_SV_SetConfigstring: Function takes 2 parameters!" );
+		return 1;
+	}
+
+	if( !lua_isnumber( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterString: parameter 1 must be an int!" );
+		return 1;
+	}	
+	int idx = lua_tointeger( L, 1 );
+	
+	if( !lua_isstring( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_SV_SetConfigstring: parameter 2 must be a string!" );
+		return 1;
+	}
+	const char *str = (const char*)lua_tostring( L, 2 );
+
+	Plugin_SV_SetConfigstring( idx, str );
+	
+	return 0;
+}
+
+int Lua_SV_GetConfigstring( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_SV_GetConfigstring: Function takes 1 parameter!" );
+		return 1;
+	}
+
+	if( !lua_isnumber( L, 1 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterString: parameter 1 must be an int!" );
+		return 1;
+	}	
+	int idx = lua_tointeger( L, 1 );
+
+	char tmp[ 1024 ];
+	Plugin_SV_GetConfigstring( idx, tmp, sizeof( tmp ) );
+
+	lua_pushstring( L, tmp );
+	
+	return 1;
+}
+
+int Lua_Cvar_RegisterString( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 4 )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterString: Function requires exactly 4 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterString: parameter 1 must be a string!" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	if( !lua_isstring( L, 2 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterString: parameter 2 must be a string!" );
+		return 1;
+	}
+	char *varValue = (char *)lua_tostring( L, 2 );
+
+	if( !lua_isnumber( L, 3 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterString: parameter 3 must be an int!" );
+		return 1;
+	}	
+	int flags = lua_tointeger( L, 3 );
+
+	if( !lua_isstring( L, 4 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterString: parameter 4 must be a string!" );
+		return 1;
+	}
+	char *varDesc = (char *)lua_tostring( L, 4 );
+
+	CONVAR_T* cvar = Plugin_Cvar_RegisterString( varName, varValue, flags, varDesc );
+
+	lua_pushlightuserdata( L, cvar );
+
+	return 1;
+}
+
+int Lua_Cvar_RegisterBool( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 4 )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterBool: Function requires exactly 4 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterBool: parameter 1 must be a string!" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	if( lua_isboolean( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterBool: parameter 2 must be boolean!\n" );
+		return 1;
+	}
+	qboolean varValue = (qboolean)lua_toboolean( L, 2 );
+
+	if( !lua_isnumber( L, 3 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterBool: parameter 3 must be an int!" );
+		return 1;
+	}	
+	int flags = lua_tointeger( L, 3 );
+
+	if( !lua_isstring( L, 4 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterBool: parameter 4 must be a string!" );
+		return 1;
+	}
+	char *varDesc = (char *)lua_tostring( L, 4 );
+
+	CONVAR_T* cvar = Plugin_Cvar_RegisterBool( varName, varValue, flags, varDesc );
+
+	lua_pushlightuserdata( L, cvar );
+
+	return 1;
+}
+
+int Lua_Cvar_RegisterInt( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 6 )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterInt: Function requires exactly 6 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterInt: parameter 1 must be a string!" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	if( !lua_isnumber( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterInt: parameter 2 must be an int!" );
+		return 1;
+	}	
+	int value = lua_tointeger( L, 2 );
+
+	if( !lua_isnumber( L, 3 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterInt: parameter 3 must be an int!" );
+		return 1;
+	}	
+	int minvalue = lua_tointeger( L, 3 );
+
+	if( !lua_isnumber( L, 4 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterInt: parameter 4 must be an int!" );
+		return 1;
+	}	
+	int maxvalue = lua_tointeger( L, 4 );
+
+	if( !lua_isnumber( L, 5 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterInt: parameter 5 must be an int!" );
+		return 1;
+	}	
+	int flags = lua_tointeger( L, 5 );
+
+	if( !lua_isstring( L, 6 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterInt: parameter 6 must be a string!" );
+		return 1;
+	}
+	char *varDesc = (char *)lua_tostring( L, 6 );
+
+	CONVAR_T* cvar = Plugin_Cvar_RegisterInt( varName, value, minvalue, maxvalue, flags, varDesc );
+
+	lua_pushlightuserdata( L, cvar );
+
+	return 1;
+}
+
+int Lua_Cvar_RegisterFloat( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 6 )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterFloat: Function requires exactly 6 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterFloat: parameter 1 must be a string!" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	if( !lua_isnumber( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterFloat: parameter 2 must be a float!" );
+		return 1;
+	}	
+	float value = (float)lua_tonumber( L, 2 );
+
+	if( !lua_isnumber( L, 3 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterFloat: parameter 3 must be a float!" );
+		return 1;
+	}	
+	float minvalue = (float)lua_tonumber( L, 3 );
+
+	if( !lua_isnumber( L, 4 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterFloat: parameter 4 must be a float!" );
+		return 1;
+	}	
+	float maxvalue = (float)lua_tonumber( L, 4 );
+
+	if( !lua_isnumber( L, 5 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterFloat: parameter 5 must be an int!" );
+		return 1;
+	}	
+	int flags = lua_tointeger( L, 5 );
+
+	if( !lua_isstring( L, 6 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_RegisterFloat: parameter 6 must be a string!" );
+		return 1;
+	}
+	char *varDesc = (char *)lua_tostring( L, 6 );
+
+	CONVAR_T* cvar = Plugin_Cvar_RegisterFloat( varName, value, minvalue, maxvalue, flags, varDesc );
+
+	lua_pushlightuserdata( L, cvar );
+
+	return 1;
+}
+
+int Lua_Cvar_SetString( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_Cvar_SetString: takes 2 parameters!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_SetString: parameter 1 must be a CONVAR_T!\n" );
+		return 1;
+	}
+	CONVAR_T* cvar = (CONVAR_T*)lua_touserdata( L, 1 );
+
+	if( !lua_isstring( L, 2 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_SetString: parameter 2 must be a string!\n" );
+		return 1;
+	}
+	char *value = (char *)lua_tostring( L, 1 );
+
+	Plugin_Cvar_SetString( cvar, value );
+
+	return 0;
+}
+
+int Lua_Cvar_SetBool( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_Cvar_SetBool: takes 2 parameters!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_SetBool: parameter 1 must be a CONVAR_T!\n" );
+		return 1;
+	}
+	CONVAR_T* cvar = (CONVAR_T*)lua_touserdata( L, 1 );
+
+	if( lua_isboolean( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_SetBool: parameter 2 must be boolean!\n" );
+		return 1;
+	}
+	qboolean value = (qboolean)lua_toboolean( L, 2 );
+
+	Plugin_Cvar_SetBool( cvar, value );
+
+	return 0;
+}
+
+int Lua_Cvar_SetInt( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_Cvar_SetInt: takes 2 parameters!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_SetInt: parameter 1 must be a CONVAR_T!\n" );
+		return 1;
+	}
+	CONVAR_T* cvar = (CONVAR_T*)lua_touserdata( L, 1 );
+
+	if( !lua_isnumber( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_SetInt: parameter 2 must be an int!\n" );
+		return 1;
+	}	
+	int value = lua_tointeger( L, 2 );
+
+	Plugin_Cvar_SetInt( cvar, value );
+
+	return 0;
+}
+
+int Lua_Cvar_SetFloat( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_Cvar_SetFloat: takes 2 parameters!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_SetFloat: parameter 1 must be a CONVAR_T!\n" );
+		return 1;
+	}
+	CONVAR_T* cvar = (CONVAR_T*)lua_touserdata( L, 1 );
+
+	if( !lua_isnumber( L, 2 ) )
+	{
+		luaL_error( L, "Plugin_Cvar_SetFloat: parameter 2 must be a float!\n" );
+		return 1;
+	}	
+	float value = (float)lua_tonumber( L, 2 );
+
+	Plugin_Cvar_SetFloat( cvar, value );
+
+	return 0;
+}
+
+int Lua_Cvar_GetString( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cvar_GetFloat: takes 1 parameter!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_GetFloat: parameter 1 must be a CONVAR_T!\n" );
+		return 1;
+	}
+	CONVAR_T* cvar = (CONVAR_T*)lua_touserdata( L, 1 );
+
+	char tmp[ 1024 ];
+	Plugin_Cvar_GetString( cvar, tmp, sizeof( tmp ) );
+
+	lua_pushstring( L , tmp );
+
+	return 1;
+}
+
+int Lua_Cvar_GetBool( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cvar_GetBool: takes 1 parameter!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_GetBool: parameter 1 must be a CONVAR_T!\n" );
+		return 1;
+	}
+	CONVAR_T* cvar = (CONVAR_T*)lua_touserdata( L, 1 );
+
+	qboolean value = Plugin_Cvar_GetBoolean( cvar );
+
+	lua_pushboolean( L, (bool)value );
+
+	return 1;
+}
+
+int Lua_Cvar_GetInt( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cvar_GetInt: takes 1 parameter!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_GetInt: parameter 1 must be a CONVAR_T!\n" );
+		return 1;
+	}
+	CONVAR_T* cvar = (CONVAR_T*)lua_touserdata( L, 1 );
+
+	int value = Plugin_Cvar_GetInteger( cvar );
+
+	lua_pushinteger( L, value );
+
+	return 1;
+}
+
+int Lua_Cvar_GetFloat( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cvar_GetFloat: takes 1 parameter!\n" );
+		return 1;
+	}
+	
+	if ( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_GetFloat: parameter 1 must be a CONVAR_T!\n" );
+		return 1;
+	}
+	CONVAR_T* cvar = (CONVAR_T*)lua_touserdata( L, 1 );
+
+	float value = Plugin_Cvar_GetValue( cvar );
+
+	lua_pushnumber( L, value );
+
+	return 1;
+}
+
+int Lua_VariableStringBuffer( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cvar_VariableStringBuffer: takes 1 parameter!\n" );
+		return 1;
+	}
+
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_VariableStringBuffer: parameter 1 must be a string!\n" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	char tmp[ 1024 ];
+	Plugin_Cvar_VariableStringBuffer( varName, tmp, sizeof( tmp ) );
+
+	lua_pushstring( L, tmp );
+
+	return 1;
+}
+
+int Lua_Cvar_VariableValue( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cvar_VariableValue: takes 1 parameter!\n" );
+		return 1;
+	}
+
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_VariableValue: parameter 1 must be a string!\n" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	float value = Plugin_Cvar_VariableValue( varName );
+
+	lua_pushnumber( L, value );
+
+	return 1;
+}
+
+int Lua_Cvar_VariableIntegerValue( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cvar_VariableIntegerValue: takes 1 parameter!\n" );
+		return 1;
+	}
+
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_VariableIntegerValue: parameter 1 must be a string!\n" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	int value = Plugin_Cvar_VariableIntegerValue( varName );
+
+	lua_pushnumber( L, value );
+
+	return 1;
+}
+
+int Lua_Cvar_VariableBooleanValue( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Cvar_VariableBooleanValue: takes 1 parameter!\n" );
+		return 1;
+	}
+
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_VariableBooleanValue: parameter 1 must be a string!\n" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	int value = Plugin_Cvar_VariableBooleanValue( varName );
+
+	lua_pushboolean( L, (bool)value );
+
+	return 1;
+}
+
+int Lua_Cvar_Set( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_Cvar_Set: takes 2 parameters!\n" );
+		return 1;
+	}
+
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_Set: parameter 1 must be a string!\n" );
+		return 1;
+	}
+	char *varName = (char *)lua_tostring( L, 1 );
+
+	if( !lua_isstring( L, 2 ) ) 
+	{
+		luaL_error( L, "Plugin_Cvar_Set: parameter 2 must be a string!\n" );
+		return 1;
+	}
+	char *value = (char *)lua_tostring( L, 2 );
+
+	Plugin_Cvar_Set( varName, value );
+
+	return 0;
+}
+
+int Lua_Scr_NotifyLevel( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_Scr_NotifyLevel: takes 2 parameters!\n" );
+		return 1;
+	}
+
+	if( !lua_isnumber( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Scr_NotifyLevel: parameter 1 must be an int of const string!\n" );
+		return 1;
+	}
+	int constString = lua_tointeger( L, 1 );
+
+	if( !lua_isnumber( L, 2 ) ) 
+	{
+		luaL_error( L, "Plugin_Scr_NotifyLevel: parameter 2 must be an int!\n" );
+		return 1;
+	}
+	int numArgs = lua_tointeger( L, 2 );
+
+	Plugin_Scr_NotifyLevel( constString, numArgs );
+
+	return 0;
+}
+
+int Lua_Scr_Notify( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 3 )
+	{
+		luaL_error( L, "Plugin_Scr_Notify: takes 3 parameters!\n" );
+		return 1;
+	}
+
+	if( !lua_islightuserdata( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Scr_Notify: parameter 1 must be a gentity_t!\n" );
+		return 1;
+	}
+	gentity_t *ent = (gentity_t*)lua_touserdata( L, 1 );
+
+	if( !lua_isnumber( L, 2 ) ) 
+	{
+		luaL_error( L, "Plugin_Scr_Notify: parameter 2 must be an int of const string!\n" );
+		return 1;
+	}
+	int constString = lua_tointeger( L, 2 );
+
+	if( !lua_isnumber( L, 3 ) ) 
+	{
+		luaL_error( L, "Plugin_Scr_Notify: parameter 3 must be an int!\n" );
+		return 1;
+	}
+	int numArgs = lua_tointeger( L, 3 );
+
+	Plugin_Scr_Notify( ent, constString, numArgs );
+
 	return 0;
 }
