@@ -2,7 +2,7 @@
 This plugin adds support for CoD4X plugins written in Lua. It is suited towards modders, who require faster functions to be used within gsc scripts and do not want to deal with writting a C plugin. Functions written in Lua are up to 10 times faster than in gsc.
 
 # Usage
-All usable function are listed [here](https://github.com/leiizko/cod4x_lua_plugin/blob/master/main.c#L45). All functions have same usage parameters as stock plugin function with exception of:
+All usable function are listed [here](https://github.com/leiizko/cod4x_lua_plugin/blob/master/functions.h). Usable callbacks are found [here](https://github.com/leiizko/cod4x_lua_plugin/blob/master/main.c#L166-L301). All functions have same usage parameters as stock plugin function with exception of:
 ```
 Plugin_AddCommand( (string)<function name>, (int)<power> )
 Plugin_ScrAddFunction( (string)<function name> )
