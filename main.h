@@ -29,9 +29,11 @@ extern int definedFunctions;
 int Lua_TraceBack( lua_State* L );
 int Plugin_Lua_pcall( lua_State* L, int nargs, int nret );
 void Global_LuaHandler( char *funcName );
+void Global_LuaHandler_Method( char *funcName, scr_entref_t entref );
 
 void *aligned_malloc( int size, int ALIGN );
 char *AllocStub( char *funcName );
+char *AllocMethodStub( char *funcName );
 DWORD SetCall(DWORD addr, void* destination);
 
 #endif // MAIN_H

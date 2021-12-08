@@ -28,6 +28,19 @@ void Sv_LoadLuaScript()
 	lua_settop( LuaVM, 0 );
 }
 
+void Global_LuaHandler_Method( char *funcName, scr_entref_t entref )
+{
+	gentity_t *gentity = Plugin_GetGentityForEntityNum( entref );
+
+	lua_getglobal( LuaVM, funcName );
+
+	lua_pushlightuserdata( LuaVM, gentity );
+	
+	Plugin_Lua_pcall( LuaVM, 1, LUA_MULTRET );
+	
+	lua_settop( LuaVM, 0 );
+}
+
 void Global_LuaHandler( char *funcName )
 {
 	lua_getglobal( LuaVM, funcName );
@@ -132,6 +145,50 @@ char *AllocStub( char *funcName )
 	*(char*)mem = 0x04;
 	mem += sizeof( char );
 	*(char*)mem = 0xc3;
+	mem += sizeof( char );
+	
+	return callback;
+}
+
+char *AllocMethodStub( char *funcName )
+{
+	char *mem = AllocMem;
+	mem += STUB_SIZE * definedFunctions;
+	definedFunctions++;
+	
+	char *callback = mem;
+
+	// [esp+4] - scr_entref_t param
+	*(char*)mem = 0x8b; // mov eax, [esp+4]
+	mem += sizeof( char );
+	*(char*)mem = 0x44; 
+	mem += sizeof( char );
+	*(char*)mem = 0x24; 
+	mem += sizeof( char );
+	*(char*)mem = 0x04; 
+	mem += sizeof( char );
+
+	*(char*)mem = 0x50; // push eax
+	mem += sizeof( char );
+
+	*(char*)mem = 0x68; // Push dword
+	mem += sizeof( char );
+	*(int32_t*)mem = (int32_t)funcName;
+	mem += sizeof( int32_t );
+
+	*(char*)mem = 0xe8; // call
+	mem += sizeof( char );
+	*(int32_t*)mem = 0; // <- later function pointer
+	mem += sizeof( int32_t );
+
+	*(char*)mem = 0x83; // add esp, 8
+	mem += sizeof( char );
+	*(char*)mem = 0xc4;
+	mem += sizeof( char );
+	*(char*)mem = 0x08;
+	mem += sizeof( char );
+
+	*(char*)mem = 0xc3; // ret
 	mem += sizeof( char );
 	
 	return callback;
@@ -295,6 +352,13 @@ PCL void OnMessageSent(char* message, int slot, qboolean *show, int mode)
 		lua_pushboolean( LuaVM, (bool)show );
 		lua_pushinteger( LuaVM, mode );
 		Plugin_Lua_pcall( LuaVM, 4, LUA_MULTRET );	
+
+		int n = lua_gettop( LuaVM );
+	
+		if( n == 1 )
+		{
+			*show = (qboolean)lua_toboolean( LuaVM, 1 );
+		}
 	}
 	
 	lua_settop( LuaVM, 0 );

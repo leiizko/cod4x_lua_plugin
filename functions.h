@@ -11,6 +11,7 @@ void registerFunctionsToLua();
 // Register functions
 int Lua_Cmd_AddCommand( lua_State *L );
 int Lua_ScrAddFunction( lua_State *L );
+int Lua_ScrAddMethod( lua_State *L );
 
 // Add functions
 int Lua_Scr_AddEntity( lua_State *L );
@@ -40,7 +41,8 @@ int Lua_Scr_GetVector( lua_State *L );
 int Lua_Cmd_Argv( lua_State *L );
 int Lua_Cmd_Argc( lua_State *L );
 int Lua_Cmd_Args( lua_State *L );
-//int Lua_Scr_GetFunc( lua_State *L );
+int Lua_Scr_GetFunc( lua_State *L );
+//int Lua_Scr_GetFunctionHandle( lua_State *L );
 int Lua_Cmd_GetInvokerSlot( lua_State *L );
 
 // Utility

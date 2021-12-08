@@ -6,6 +6,7 @@ void registerFunctionsToLua()
 	// Register functions
 	lua_register( LuaVM, "Plugin_AddCommand", Lua_Cmd_AddCommand );
 	lua_register( LuaVM, "Plugin_ScrAddFunction", Lua_ScrAddFunction );
+	lua_register( LuaVM, "Plugin_ScrAddMethod", Lua_ScrAddMethod );
 	
 	// Add functions
 	lua_register( LuaVM, "Plugin_Scr_AddEntity", Lua_Scr_AddEntity );
@@ -35,7 +36,8 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Cmd_Argv", Lua_Cmd_Argv );
 	lua_register( LuaVM, "Plugin_Cmd_Argc", Lua_Cmd_Argc );
 	lua_register( LuaVM, "Plugin_Cmd_Args", Lua_Cmd_Args );
-//	lua_register( LuaVM, "Plugin_Scr_GetFunc", Lua_Scr_GetFunc );
+	lua_register( LuaVM, "Plugin_Scr_GetFunc", Lua_Scr_GetFunc );
+//	lua_register( LuaVM, "Plugin_Scr_GetFunctionHandle", Lua_Scr_GetFunctionHandle );
 	lua_register( LuaVM, "Plugin_Cmd_GetInvokerSlot", Lua_Cmd_GetInvokerSlot );
 
 	
@@ -319,6 +321,34 @@ int Lua_ScrAddFunction( lua_State *L )
 	return 0;
 }
 
+int Lua_ScrAddMethod( lua_State *L )
+{
+	int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_ScrAddMethod: Function requires exactly 1 parameter!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_ScrAddMethod: parameter 1 must be a string!" );
+		return 1;
+	}
+	char *funcName = (char *)lua_tostring( L, 1 );
+
+	char *callback = AllocMethodStub( funcName );
+
+	SetCall( (DWORD)callback + 10, Global_LuaHandler_Method );
+	
+	Plugin_ScrAddMethod( funcName, (void *)callback );
+
+	Plugin_Printf( "Made method!\n\n" );
+
+	return 0;
+}
+
 int Lua_Scr_AddEntity( lua_State *L )
 {
 	int n = lua_gettop( L );
@@ -349,13 +379,13 @@ int Lua_Scr_AddInt( lua_State *L )
 	
 	if( n != 1 )
 	{
-		luaL_error( L, "Scr_AddInt: takes exactly one argument!\n" );
+		luaL_error( L, "Plugin_Scr_AddInt: takes exactly one argument!\n" );
 		return 1;
 	}
 	
 	if (!lua_isnumber( L, 1 )) 
 	{
-		luaL_error( L, "Scr_AddInt: Argument must be an integer!\n" );
+		luaL_error( L, "Plugin_Scr_AddInt: Argument must be an integer!\n" );
 		return 1;
 	}
 	
@@ -372,13 +402,13 @@ int Lua_Scr_AddFloat( lua_State *L )
 	
 	if( n != 1 )
 	{
-		luaL_error( L, "Scr_AddFloat: takes exactly one argument!\n" );
+		luaL_error( L, "Plugin_Scr_AddFloat: takes exactly one argument!\n" );
 		return 1;
 	}
 	
 	if (!lua_isnumber( L, 1 )) 
 	{
-		luaL_error( L, "Scr_AddFloat: Argument must be a float!\n" );
+		luaL_error( L, "Plugin_Scr_AddFloat: Argument must be a float!\n" );
 		return 1;
 	}
 	
@@ -528,13 +558,13 @@ int Lua_Scr_ExecEntThread( lua_State *L )
 	
 	if( n != 3 )
 	{
-		luaL_error( L, "Lua_Scr_ExecEntThread: takes three arguments!\n" );
+		luaL_error( L, "Plugin_Scr_ExecEntThread: takes three arguments!\n" );
 		return 1;
 	}
 	
 	if ( !lua_islightuserdata( L, 1 ) ) 
 	{
-		luaL_error( L, "Lua_Scr_ExecEntThread: Argument 1 must be an gentity_t!\n" );
+		luaL_error( L, "Plugin_Scr_ExecEntThread: Argument 1 must be an gentity_t!\n" );
 		return 1;
 	}
 	
@@ -542,7 +572,7 @@ int Lua_Scr_ExecEntThread( lua_State *L )
 	
 	if ( !lua_isnumber( L, 2 ) ) 
 	{
-		luaL_error( L, "Lua_Scr_ExecEntThread: Argument 2 must be an integer!\n" );
+		luaL_error( L, "Plugin_Scr_ExecEntThread: Argument 2 must be an integer!\n" );
 		return 1;
 	}
 	
@@ -550,7 +580,7 @@ int Lua_Scr_ExecEntThread( lua_State *L )
 	
 	if ( !lua_isnumber( L, 3 ) ) 
 	{
-		luaL_error( L, "Lua_Scr_ExecEntThread: Argument 3 must be an integer!\n" );
+		luaL_error( L, "Plugin_Scr_ExecEntThread: Argument 3 must be an integer!\n" );
 		return 1;
 	}
 	
@@ -828,7 +858,6 @@ int Lua_Scr_GetEntity( lua_State *L )
 	return 1;
 }
 
-/*
 int Lua_Scr_GetFunc( lua_State *L )
 {
 	int n = lua_gettop( L );
@@ -847,13 +876,45 @@ int Lua_Scr_GetFunc( lua_State *L )
 	
 	int i = lua_tointeger( L, 1 );
 	
-	int result = Scr_GetFunc( i );
+	int result = Plugin_Scr_GetFunc( i );
 	
 	lua_pushinteger( L, result );
 	
 	return 1;
 }
-*/
+
+#if 0
+// Works only in script runtime initialization
+int Lua_Scr_GetFunctionHandle( lua_State *L )
+{
+	int n = lua_gettop( L );
+	if( n != 2 )
+	{
+		luaL_error( L, "Plugin_Scr_GetFunctionHandle: Function takes 2 parameters!" );
+		return 1;
+	}
+	
+	if( !lua_isstring( L, 1 ) ) 
+	{
+		luaL_error( L, "Plugin_Scr_GetFunctionHandle: parameter 1 must be a string!" );
+		return 1;
+	}
+	const char *fileName = ( const char *)lua_tostring( L, 1 );
+
+	if( !lua_isstring( L, 2 ) ) 
+	{
+		luaL_error( L, "Plugin_Scr_GetFunctionHandle: parameter 2 must be a string!" );
+		return 1;
+	}
+	const char *functionName = ( const char *)lua_tostring( L, 2 );
+
+	int fh = Plugin_Scr_GetFunctionHandle( fileName, functionName );
+
+	lua_pushinteger( L, fh );
+	
+	return 1;
+}
+#endif
 
 int Lua_Cmd_GetInvokerSlot( lua_State *L )
 {
