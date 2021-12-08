@@ -4,9 +4,62 @@ We do our best to keep it updated._
 
 ## Table of Contents
 1. [Register functions](#register-functions)
+    - [Plugin_AddCommand](#plugin_addcommand-char-commandname-int-power-)
+    - [Plugin_ScrAddFunction](#plugin_scraddfunction-char-functionname-)
+    - [Plugin_ScrAddMethod](#plugin_scraddmethod-char-methodname-)
 2. [Get functions](#get-functions)
+    - [Plugin_Scr_GetNumParam](#plugin_scr_getnumparam)
+    - [Plugin_Scr_GetEntity](#plugin_scr_getentity-int-paramnum-)
+    - [Plugin_Scr_GetInt](#plugin_scr_getint-int-paramnum-)
+    - [Plugin_Scr_GetFloat](#plugin_scr_getfloat-int-paramnum-)
+    - [Plugin_Scr_GetVector](#plugin_scr_getvector-int-paramnum-)
+    - [Plugin_Scr_GetType](#plugin_scr_gettype-int-paramnum-)
+    - [Plugin_Scr_GetString](#plugin_scr_getstring-int-paramnum-)
+    - [Plugin_Scr_GetFunc](#plugin_scr_getfunc-int-paramnum-)
+    - [Plugin_Cmd_GetInvokerSlot](#plugin_cmd_getinvokerslot)
+    - [Plugin_Cmd_Argc](#plugin_cmd_argc)
+    - [Plugin_Cmd_Args](#plugin_cmd_args)
+    - [Plugin_Cmd_Argv](#plugin_cmd_argv)
 3. [Add functions](#add-functions)
+    - [Plugin_Scr_AddEntity](#plugin_scr_addentity-gentity_t-ent)
+    - [Plugin_Scr_AddInt](#plugin_scr_addint-int-num-)
+    - [Plugin_Scr_AddFloat](#plugin_scr_addfloat-float-num-)
+    - [Plugin_Scr_AddBool](#plugin_scr_addbool-qboolean-bool-)
+    - [Plugin_Scr_AddString](#plugin_scr_addstring-char-str-)
+    - [Plugin_Scr_AddVector](#plugin_scr_addvector-vec3_t-vec3-)
+    - [Plugin_Scr_AddUndefined](#plugin_scr_addundefined)
+    - [Plugin_Scr_MakeArray](#plugin_scr_makearray)
+    - [Plugin_Scr_AddArray](#plugin_scr_addarray)
+    - [Plugin_Scr_AddArrayStringIndexed](#plugin_scr_addarraystringindexed-int-stridx-)
 4. [Thread functions](#thread-functions)
+    - [Plugin_Scr_FreeThread](#plugin_scr_freethread-int-threadid-)
+    - [Plugin_Scr_ExecThread](#plugin_scr_execthread-int-callbackhook-int-numparams-)
+    - [Plugin_Scr_ExecEntThread](#plugin_scr_execentthread-gentity_t-ent-int-callbackhook-int-numparams-)
+5. [Utility functions](#utility-functions)
+    - [Plugin_Printf](#plugin_printf-const-char-str)
+    - [Plugin_DPrintf](#plugin_dprintf-const-char-str)
+    - [Plugin_GetVersion](#plugin_getversion)
+    - [Plugin_Milliseconds](#plugin_milliseconds)
+    - [Plugin_Scr_Error](#plugin_scr_error-const-char-str)
+    - [Plugin_Scr_ParamError](#plugin_scr_paramerror-int-paramnum-const-char-str)
+    - [Plugin_Scr_ObjectError](#plugin_scr_objecterror-const-char-str)
+    - [Plugin_Error](#plugin_error-int-code-const-char-str)
+    - [Plugin_GetGentityForClientNum](#plugin_getgentityforclientnum-int-clientnum)
+    - [Plugin_GetClientNumForGentity](#plugin_getclientnumforgentity-gentity_t-ent)
+    - [Plugin_GetPlayerName](#plugin_getplayername-int-clientnum)
+    - [Plugin_GetClientScoreboard](#plugin_getclientscoreboard-int-clientnum)
+    - [Plugin_Scr_AllocString](#plugin_scr_allocstring-const-char-str)
+    - [Plugin_SV_GetConfigstring](#plugin_sv_getconfigstring-int-index)
+    - [Plugin_SV_SetConfigstring](#plugin_sv_setconfigstring-int-index-const-char-str)
+    - [Plugin_DropClient](#plugin_dropclient-int-clientnum-const-char-reason)
+    - [Plugin_BanClient](#plugin_banclient-int-clientnum-int-minutes-int-invokerid-const-char-reason)
+6. [Notify functions](#notify-functions)
+    - [Plugin_Scr_NotifyLevel](#plugin_scr_notifylevel-int-stridx-int-paramnum)
+    - [Plugin_Scr_Notify](#plugin_scr_notify-gentity_t-ent-int-stridx-int-paramnum)
+7. [ICONV functions](#iconv-functions)
+    - [Plugin_iconv_open](#plugin_iconv_open-char-to-char-from)
+    - [Plugin_iconv_close](#plugin_iconv_close-int-conversionIndex)
+    - [Plugin_iconv](#plugin_iconv-int-conversionIndex-char-str)
 
 ## Register functions
 These functions are used to add script functions or commands to gsc.
@@ -56,7 +109,7 @@ Registers a method with methodName, lua function must be of same name. **Player*
 Usage example:
 Lua:
 ```lua
-Plugin_ScrAddFunction( "foo" )
+Plugin_ScrAddMethod( "foo" )
 
 function foo( gentity )
 
@@ -371,6 +424,29 @@ end
 
 Used to return specified type from lua to gsc. You can only return a single type to gsc.
 
+#### Plugin_Scr_AddEntity( gentity_t *ent )
+
+Adds gentity_t* to gsc function.
+
+Usage example:
+Lua:
+```lua
+Plugin_ScrAddFunction( "foo" )
+
+function foo()
+
+    gentity = Plugin_GetGentityForClientNum( 10 ) -- returns gentity for client slot 10
+    Plugin_Scr_AddEntity( gentity )
+end
+```
+Gsc:
+```c
+init()
+{
+    num = foo(); // Returns gentity
+}
+```
+
 #### Plugin_Scr_AddInt( int num )
 
 Adds integer to gsc function.
@@ -491,7 +567,7 @@ init()
 
 #### Plugin_Scr_AddUndefined()
 
-Adds boolean to gsc function.
+Adds undefined to gsc function.
 
 Usage example:
 Lua:
@@ -516,7 +592,6 @@ init()
 
 #### Plugin_Scr_MakeArray()
 #### Plugin_Scr_AddArray()
-#### Plugin_Scr_AddArrayKeys( int strIdx )
 
 These functions are used to add array to gsc. First Plugin_Scr_MakeArray() must be used, followed by [Add function](#add-functions) and finished by Plugin_Scr_AddArray().
 It is also possible to add multi-dimensional arrays by nesting Plugin_Scr_MakeArray() function.
@@ -533,7 +608,9 @@ function foo()
 
     Plugin_Scr_MakeArray()
     Plugin_Scr_AddInt( 1 )
+    Plugin_Scr_AddArray()
     Plugin_Scr_AddInt( 2 )
+    Plugin_Scr_AddArray()
     Plugin_Scr_AddInt( 3 )
     Plugin_Scr_AddArray()
 end
@@ -543,12 +620,17 @@ function foo2D()
     Plugin_Scr_MakeArray()
     Plugin_Scr_MakeArray()
     Plugin_Scr_AddInt( 1 )
+    Plugin_Scr_AddArray()
     Plugin_Scr_AddInt( 2 )
+    Plugin_Scr_AddArray()
     Plugin_Scr_AddInt( 3 )
+    Plugin_Scr_AddArray()
     Plugin_Scr_AddArray()
     Plugin_Scr_MakeArray()
     Plugin_Scr_AddInt( 4 )
+    Plugin_Scr_AddArray()
     Plugin_Scr_AddInt( 5 )
+    Plugin_Scr_AddArray()
     Plugin_Scr_AddInt( 6 )
     Plugin_Scr_AddArray()
     Plugin_Scr_AddArray()
@@ -561,6 +643,35 @@ init()
     arr = foo(); // returns arr[ 0 ] = 1, arr[ 1 ] = 2, ...
 
     arr2d = foo2D(); // returns arr[ 0 ][ 0 ] = 1, arr[ 1 ][ 1 ] = 5, ...
+}
+```
+
+#### Plugin_Scr_AddArrayStringIndexed( int strIdx )
+
+Function used to add array to gsc with string index. First Plugin_Scr_MakeArray() must be used, followed by [Add function](#add-functions) and finished by Plugin_Scr_AddArrayStringIndexed( int strIdx ), where strIdx must be provided by Plugin_Scr_AllocString( char* str ). You may nest arrays as in previous example.
+
+Usage example:
+Lua:
+```lua
+Plugin_ScrAddFunction( "foo" )
+
+function foo()
+
+    strIdx1 = Plugin_Scr_AllocString( "index1" )
+    strIdx2 = Plugin_Scr_AllocString( "anotherIndex" )
+
+    Plugin_Scr_MakeArray()
+    Plugin_Scr_AddInt( 1 )
+    Plugin_Scr_AddArrayStringIndexed( strIdx1 )
+    Plugin_Scr_AddInt( 2 )
+    Plugin_Scr_AddArrayStringIndexed( strIdx2 )
+end
+```
+Gsc:
+```c
+init()
+{
+    arr = foo(); // returns arr[ "index1" ] = 1, arr[ "anotherIndex" ] = 2
 }
 ```
 
@@ -605,7 +716,7 @@ callback( arg1, arg2 )
 }
 ```
 
-#### Plugin_Scr_ExecEntThread( gentity_t ent, int callbackhook, int numParams )
+#### Plugin_Scr_ExecEntThread( gentity_t *ent, int callbackhook, int numParams )
 
 Creates a gsc thread with specified parameter number and entity (self in callback is the specified entity, meanwhile Plugin_Scr_ExecThread( int callbackhook, int numParams ) self is level object). You can return different types of parameters.
 
@@ -630,7 +741,8 @@ Gsc:
 ```c
 init()
 {
-    foo( ::callback );
+    level waittill( "connected", player );
+    player foo( ::callback );
 }
 
 callback( arg1, arg2, arg3 )
@@ -639,4 +751,385 @@ callback( arg1, arg2, arg3 )
     // number of args is defined when calling the function from lua - could be none or several.
 }
 ```
+
+## Utility functions
+
+Functions that return various things and compliment other functionality.
+
+#### Plugin_Printf( const char *str )
+
+Prints string to console
+
+Usage example:
+Lua:
+```lua
+str = "World!"
+
+Plugin_Printf( "Hello " .. str .. "\n" ) -- prints Hello World! to console
+```
+
+#### Plugin_DPrintf( const char *str )
+
+Prints string to console when developer mode is enabled.
+
+Usage example:
+Lua:
+```lua
+Plugin_Printf( "I am only visible in developer mode!" )
+```
+
+#### Plugin_GetVersion()
+
+Returns plugin version as float.
+
+Usage example:
+Lua:
+```lua
+ver = Plugin_GetVersion() -- example returns 0.5
+```
+
+#### Plugin_Milliseconds()
+
+Returns time since server start in miliseconds.
+
+Usage example:
+Lua:
+```lua
+timeElapsed = Plugin_Milliseconds()
+```
+
+#### Plugin_Scr_Error( const char *str )
+
+Prints a script runtime error to console.
+
+Usage example:
+Lua:
+```lua
+Plugin_ScrAddFunction( "foo" )
+
+function foo()
+
+    Plugin_Scr_Error( "Depricated! use foo2() instead!\n" )
+end
+```
+Gsc:
+```c
+init()
+{
+    arr = foo();
+}
+```
+
+#### Plugin_Scr_ParamError( int paramNum, const char *str )
+
+Prints a script runtime error for parameter with paramNum.
+
+Usage example:
+Lua:
+```lua
+Plugin_ScrAddFunction( "foo" )
+
+function foo()
+
+    type = Plugin_Scr_GetType( 0 )
+
+    if( type != 2)
+        Plugin_Scr_ParamError( 0, "Parameter 1 must be a string!\n" )
+end
+```
+Gsc:
+```c
+init()
+{
+    arr = foo();
+}
+```
+
+#### Plugin_Scr_ObjectError( const char *str )
+
+Prints a script runtime error for object. Not really useful as plugin C functions already raise this if applicable.
+
+#### Plugin_Error( int code, const char *str )
+
+Raises plugin error. Actions depend on code parameter:
+0 = Raises a plugin warning
+1 = Disabled the plugin
+2 = Terminates the server
+
+Usage example:
+Lua:
+```lua
+if somethingBadHappened then
+    Plugin_Error( 2, "Critical error because something bad happened" )
+end
+```
+
+#### Plugin_GetGentityForClientNum( int clientNum )
+
+Returns gentity for specified clientNum.
+
+Usage example:
+Lua:
+```lua
+Plugin_ScrAddFunction( "foo" )
+
+function foo()
+
+    callbackhook = Plugin_Scr_GetFunc( 0 )
+    clientNum = Plugin_Scr_GetInt( 1 )
+
+    gentity = Plugin_GetGentityForClientNum( clientNum )
+
+    Plugin_Scr_AddInt( 1 )
+    Plugin_Scr_AddString( "whatever" )
+    Plugin_Scr_AddString( "Third arg!" )
+    thread = Plugin_Scr_ExecEntThread( gentity, callbackhook, 3 )
+
+    Plugin_Scr_FreeThread( thread )
+end
+```
+Gsc:
+```c
+init()
+{
+    foo( ::callback, clientNum );
+}
+
+callback( arg1, arg2, arg3 )
+{
+    print( self.name ) // prints player name
+    // number of args is defined when calling the function from lua - could be none or several.
+}
+```
+
+#### Plugin_GetClientNumForGentity( gentity_t *ent )
+
+Returns a client number for specified gentity_t*.
+
+Usage example:
+Lua:
+```lua
+Plugin_ScrAddMethod( "foo" )
+
+function foo( gentity )
+
+    clientNum = Plugin_GetClientNumForGentity( gentity )
+end
+```
+Gsc:
+```c
+init()
+{
+    level waittill( "connected", player );
+    player foo();
+}
+```
+
+#### Plugin_GetPlayerName( int clientNum )
+
+Returns player name for specified clientNum
+
+Usage example:
+Lua:
+```lua
+Plugin_ScrAddMethod( "foo" )
+
+function foo( gentity )
+
+    clientNum = Plugin_GetClientNumForGentity( gentity )
+    playerName = Plugin_GetPlayerName( clientNum )
+end
+```
+Gsc:
+```c
+init()
+{
+    level waittill( "connected", player );
+    player foo();
+}
+```
+
+#### Plugin_GetClientScoreboard( int clientNum )
+
+Returns scoreboard ( kills, assists, deaths and score ) for specified clientNum
+
+Usage example:
+Lua:
+```lua
+Plugin_ScrAddMethod( "foo" )
+
+function foo( gentity )
+
+    clientNum = Plugin_GetClientNumForGentity( gentity )
+    scoreboard = Plugin_GetClientScoreboard( clientNum )
+    --[[
+    returns table with following indexes:
+    scoreboard.kills
+    scoreboard.assists
+    scoreboard.deaths
+    scoreboard.score
+    ]]--
+end
+```
+Gsc:
+```c
+init()
+{
+    level waittill( "connected", player );
+    player foo();
+}
+```
+
+#### Plugin_Scr_AllocString( const char *str )
+
+Allocates string and returns its index. Strings must be reallocated each time map rotates or fully restarts - use OnSpawnServer event.
+
+Usage example:
+Lua:
+```lua
+allocatedStrings = {}
+
+--[[ 
+Called on gametype start - Each time map fully restarts or rotates
+]]--
+function OnSpawnServer ()
+
+    allocatedStrings.arrayindex_kda = Plugin_Scr_AllocString( "KDA" )
+    allocatedStrings.notifyindex_clientupdate = Plugin_Scr_AllocString( "client_update" )
+    -- ....
+end
+```
+
+#### Plugin_SV_GetConfigstring( int index )
+
+Returns config string with index.
+
+Usage example:
+Lua:
+```lua
+    configstring = Plugin_SV_GetConfigstring( 110 )
+```
+
+#### Plugin_SV_SetConfigstring( int index, const char* str )
+
+Sets config string with index
+
+Usage example:
+Lua:
+```lua
+    Plugin_SV_SetConfigstring( 110, "newstring" )
+```
+
+#### Plugin_DropClient( int clientNum, const char* reason )
+
+Kicks a player with clientNum for specified reason.
+
+Usage example:
+Lua:
+```lua
+    Plugin_DropClient( 10, "You are AFK!" )
+```
+
+#### Plugin_BanClient( int clientNum, int minutes, int invokerid, const char* reason )
+
+Bans client with clientNum for specified lenghts in minutes for specified reason.
+Minutes can be -1 for permanent ban or any other specified lenght.
+InvokerID can be 0 or numeric UID.
+
+Usage example:
+Lua:
+```lua
+    Plugin_BanClient( 10, -1, 0, "Cheating" ) --perm ban
+```
+
+## Notify functions
+
+Following functions trigger a gsc notify event.
+
+#### Plugin_Scr_NotifyLevel( int strIdx, int paramNum )
+
+Triggers a level notify event with allocated string with strIdx and number of parameters.
+
+Usage example:
+Lua:
+```lua
+allocatedStrings = {}
+
+--[[ 
+Called on gametype start - Each time map fully restarts or rotates
+]]--
+function OnSpawnServer ()
+
+    allocatedStrings.notifyindex_clientupdate = Plugin_Scr_AllocString( "client_update" )
+    -- ....
+end
+
+function doEvent ()
+    Plugin_Scr_AddInt( Plugin_Milliseconds() )
+    Plugin_Scr_NotifyLevel( allocatedStrings.notifyindex_clientupdate, 1 )
+end
+```
+Gsc:
+```c
+init()
+{
+    level waittill( "client_update", time );
+
+    // ..
+}
+```
+
+#### Plugin_Scr_Notify( gentity_t *ent, int strIdx, int paramNum )
+
+Triggers a entity notify event with allocated string with strIdx and number of parameters.
+
+Usage example:
+Lua:
+```lua
+allocatedStrings = {}
+
+--[[ 
+Called on gametype start - Each time map fully restarts or rotates
+]]--
+function OnSpawnServer ()
+
+    allocatedStrings.notifyindex_clientupdate = Plugin_Scr_AllocString( "client_update" )
+    -- ....
+end
+
+function doEvent ()
+    Plugin_Scr_AddInt( Plugin_Milliseconds() )
+    ent = Plugin_GetGentityForClientNum( 10 )
+    Plugin_Scr_Notify( ent, allocatedStrings.notifyindex_clientupdate, 1 )
+end
+```
+Gsc:
+```c
+init()
+{
+    level waittill( "connected", player );
+
+    player waittill( "client_update", time )
+
+    // ....
+}
+```
+
+## ICONV functions
+
+Can only be used when plugin is compiled with libiconv and is used to make a server-side localization.
+
+#### Plugin_iconv_open( char *to, char *from )
+
+Opens a conversion, returns index of open conversion.
+
+#### Plugin_iconv_close( int conversionIndex )
+
+Closes a conversion with convesionIndex.
+
+#### Plugin_iconv( int conversionIndex, char *str )
+
+Does a conversion on str, specified with open conversion at conversionIndex.
+
+An example can be found [here](LuaScripts/examples/localization.lua)
 

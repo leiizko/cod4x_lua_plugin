@@ -23,7 +23,7 @@ int Lua_Scr_AddUndefined( lua_State *L );
 int Lua_Scr_AddVector( lua_State *L );
 int Lua_Scr_AddArray( lua_State *L );
 int Lua_Scr_MakeArray( lua_State *L );
-int Lua_Scr_AddArrayKeys( lua_State *L );
+int Lua_Scr_AddArrayStringIndexed( lua_State *L );
 
 // Script threads
 int Lua_Scr_ExecEntThread( lua_State *L );

@@ -24,6 +24,11 @@ void Sv_LoadLuaScript()
 			return;
 		}
 	}
+	else
+	{
+		Plugin_Printf( "****************** Lua Error: ******************\n\n%s\n", lua_tostring( LuaVM, -1 ) );	
+		Plugin_Printf( "\n************************************************\n" );
+	}
 
 	lua_settop( LuaVM, 0 );
 }

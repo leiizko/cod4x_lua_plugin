@@ -18,7 +18,7 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Scr_AddVector", Lua_Scr_AddVector );
 	lua_register( LuaVM, "Plugin_Scr_AddArray", Lua_Scr_AddArray );
 	lua_register( LuaVM, "Plugin_Scr_MakeArray", Lua_Scr_MakeArray );
-	lua_register( LuaVM, "Plugin_Scr_AddArrayKeys", Lua_Scr_AddArrayKeys );
+	lua_register( LuaVM, "Plugin_Scr_AddArrayStringIndexed", Lua_Scr_AddArrayStringIndexed );
 	
 	// Script threads
 	lua_register( LuaVM, "Plugin_Scr_ExecEntThread", Lua_Scr_ExecEntThread );
@@ -529,25 +529,25 @@ int Lua_Scr_MakeArray( lua_State *L )
 	return 0;
 }
 
-int Lua_Scr_AddArrayKeys( lua_State *L )
+int Lua_Scr_AddArrayStringIndexed( lua_State *L )
 {
 	int n = lua_gettop( L );
 	
 	if( n != 1 )
 	{
-		luaL_error( L, "Plugin_Scr_AddArrayKeys: takes exactly one argument!\n" );
+		luaL_error( L, "Plugin_Scr_AddArrayStringIndexed: takes exactly one argument!\n" );
 		return 1;
 	}
 	
 	if (!lua_isnumber( L, 1 )) 
 	{
-		luaL_error( L, "Plugin_Scr_AddArrayKeys: Argument must be an integer!\n" );
+		luaL_error( L, "Plugin_Scr_AddArrayStringIndexed: Argument must be an integer!\n" );
 		return 1;
 	}
 	
 	int i = lua_tointeger( L, 1 );
 	
-	Plugin_Scr_AddArrayKeys( i );
+	Plugin_Scr_AddArrayStringIndexed( i );
 	
 	return 0;
 }
@@ -1068,7 +1068,7 @@ int Lua_Scr_ParamError( lua_State *L )
 	
 	if( !lua_isnumber( L, 1 ) )
 	{
-		luaL_error( L, "Plugin_Scr_Error: parameter 1 must be an int!" );
+		luaL_error( L, "Plugin_Scr_ParamError: parameter 1 must be an int!" );
 		return 1;
 	}
 	
@@ -1076,7 +1076,7 @@ int Lua_Scr_ParamError( lua_State *L )
 	
 	if ( !lua_isstring( L, 2 ) ) 
 	{
-		luaL_error( L, "Plugin_Scr_Error: parameter 2 must be a string!" );
+		luaL_error( L, "Plugin_Scr_ParamError: parameter 2 must be a string!" );
 		return 1;
 	}
 	
@@ -1311,7 +1311,7 @@ int Lua_SV_SetConfigstring( lua_State *L )
 
 	if( !lua_isnumber( L, 1 ) )
 	{
-		luaL_error( L, "Plugin_Cvar_RegisterString: parameter 1 must be an int!" );
+		luaL_error( L, "Plugin_SV_SetConfigstring: parameter 1 must be an int!" );
 		return 1;
 	}	
 	int idx = lua_tointeger( L, 1 );
@@ -1339,7 +1339,7 @@ int Lua_SV_GetConfigstring( lua_State *L )
 
 	if( !lua_isnumber( L, 1 ) )
 	{
-		luaL_error( L, "Plugin_Cvar_RegisterString: parameter 1 must be an int!" );
+		luaL_error( L, "Plugin_SV_GetConfigstring: parameter 1 must be an int!" );
 		return 1;
 	}	
 	int idx = lua_tointeger( L, 1 );
