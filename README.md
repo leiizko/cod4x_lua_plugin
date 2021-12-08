@@ -1,4 +1,4 @@
-# Call of Duty 4 X Lua Plugin
+# Call of Duty 4 X Lua Plugin [![build](https://github.com/leiizko/cod4x_lua_plugin/actions/workflows/build.yml/badge.svg)](https://github.com/leiizko/cod4x_lua_plugin/actions/workflows/build.yml)
 This plugin adds support for CoD4X plugins written in Lua, removing any need to compile it against CoD4X server enabling rapid development. It is best used to replace expensive gsc functions and to add additional functionality to game with persistent storage and http capability. Using libiconv it can also serve as server side localization option.
 
 # Usage
@@ -12,8 +12,10 @@ lua_loadscript "path/script.lua"
 ```
 Do not load more than 1 script via this command, use entry lua script to load any additional scripts.
 
-Function documentation can be found [here](functiondoc.md).
+Function documentation can be found [here](functiondoc.md#function-reference).
 Event documentation can be found [here](LuaScripts/examples/events.lua)
+
+As of version 0.5 plugin requires server version [b3b68dd](https://github.com/callofduty4x/CoD4x_Server/commit/b3b68dda2ede9c83c28192ac8973b9bb19265599) or later.
 
 # Compiling
 To compile without libiconv enter directory and run make. To include libiconv enter directory and run make ICONV=TRUE. 

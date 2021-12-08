@@ -36,30 +36,50 @@ We do our best to keep it updated._
     - [Plugin_Scr_ExecThread](#plugin_scr_execthread-int-callbackhook-int-numparams-)
     - [Plugin_Scr_ExecEntThread](#plugin_scr_execentthread-gentity_t-ent-int-callbackhook-int-numparams-)
 5. [Utility functions](#utility-functions)
-    - [Plugin_Printf](#plugin_printf-const-char-str)
-    - [Plugin_DPrintf](#plugin_dprintf-const-char-str)
-    - [Plugin_GetVersion](#plugin_getversion)
-    - [Plugin_Milliseconds](#plugin_milliseconds)
-    - [Plugin_Scr_Error](#plugin_scr_error-const-char-str)
-    - [Plugin_Scr_ParamError](#plugin_scr_paramerror-int-paramnum-const-char-str)
-    - [Plugin_Scr_ObjectError](#plugin_scr_objecterror-const-char-str)
-    - [Plugin_Error](#plugin_error-int-code-const-char-str)
-    - [Plugin_GetGentityForClientNum](#plugin_getgentityforclientnum-int-clientnum)
-    - [Plugin_GetClientNumForGentity](#plugin_getclientnumforgentity-gentity_t-ent)
-    - [Plugin_GetPlayerName](#plugin_getplayername-int-clientnum)
-    - [Plugin_GetClientScoreboard](#plugin_getclientscoreboard-int-clientnum)
-    - [Plugin_Scr_AllocString](#plugin_scr_allocstring-const-char-str)
-    - [Plugin_SV_GetConfigstring](#plugin_sv_getconfigstring-int-index)
-    - [Plugin_SV_SetConfigstring](#plugin_sv_setconfigstring-int-index-const-char-str)
-    - [Plugin_DropClient](#plugin_dropclient-int-clientnum-const-char-reason)
-    - [Plugin_BanClient](#plugin_banclient-int-clientnum-int-minutes-int-invokerid-const-char-reason)
+    - [Plugin_Printf](#plugin_printf-const-char-str-)
+    - [Plugin_DPrintf](#plugin_dprintf-const-char-str-)
+    - [Plugin_GetVersion](#plugin_getversion-)
+    - [Plugin_Milliseconds](#plugin_milliseconds-)
+    - [Plugin_Scr_Error](#plugin_scr_error-const-char-str-)
+    - [Plugin_Scr_ParamError](#plugin_scr_paramerror-int-paramnum-const-char-str-)
+    - [Plugin_Scr_ObjectError](#plugin_scr_objecterror-const-char-str-)
+    - [Plugin_Error](#plugin_error-int-code-const-char-str-)
+    - [Plugin_GetGentityForClientNum](#plugin_getgentityforclientnum-int-clientnum-)
+    - [Plugin_GetClientNumForGentity](#plugin_getclientnumforgentity-gentity_t-ent-)
+    - [Plugin_GetPlayerName](#plugin_getplayername-int-clientnum-)
+    - [Plugin_GetClientScoreboard](#plugin_getclientscoreboard-int-clientnum-)
+    - [Plugin_Scr_AllocString](#plugin_scr_allocstring-const-char-str-)
+    - [Plugin_SV_GetConfigstring](#plugin_sv_getconfigstring-int-index-)
+    - [Plugin_SV_SetConfigstring](#plugin_sv_setconfigstring-int-index-const-char-str-)
+    - [Plugin_DropClient](#plugin_dropclient-int-clientnum-const-char-reason-)
+    - [Plugin_BanClient](#plugin_banclient-int-clientnum-int-minutes-int-invokerid-const-char-reason-)
 6. [Notify functions](#notify-functions)
-    - [Plugin_Scr_NotifyLevel](#plugin_scr_notifylevel-int-stridx-int-paramnum)
-    - [Plugin_Scr_Notify](#plugin_scr_notify-gentity_t-ent-int-stridx-int-paramnum)
+    - [Plugin_Scr_NotifyLevel](#plugin_scr_notifylevel-int-stridx-int-paramnum-)
+    - [Plugin_Scr_Notify](#plugin_scr_notify-gentity_t-ent-int-stridx-int-paramnum-)
 7. [ICONV functions](#iconv-functions)
-    - [Plugin_iconv_open](#plugin_iconv_open-char-to-char-from)
-    - [Plugin_iconv_close](#plugin_iconv_close-int-conversionIndex)
-    - [Plugin_iconv](#plugin_iconv-int-conversionIndex-char-str)
+    - [Plugin_iconv_open](#plugin_iconv_open-char-to-char-from-)
+    - [Plugin_iconv_close](#plugin_iconv_close-int-conversionIndex-)
+    - [Plugin_iconv](#plugin_iconv-int-conversionIndex-char-str-)
+8. [CVAR functions](#cvar-functions)
+    - [Plugin_Cvar_RegisterString](#plugin_cvar_registerstring-char-varname-char-varvalue-int-flags-char-vardesc-)
+    - [Plugin_Cvar_RegisterBool](#plugin_cvar_registerbool-char-varName-qboolean-varValue-int-flags-char-varDesc-)
+    - [Plugin_Cvar_RegisterInt](#plugin_cvar_registerint-char-varName-int-value-int-minvalue-int-maxvalue-int-flags-char-varDesc-)
+    - [Plugin_Cvar_RegisterFloat](#plugin_cvar_registerfloat-char-varName-float-value-float-minvalue-float-maxvalue-int-flags-char-varDesc-)
+    - [Plugin_Cvar_SetString](#plugin_cvar_setstring-convar_t-cvar-char-value-)
+    - [Plugin_Cvar_SetBool](#plugin_cvar_setbool-convar_t-cvar-qboolean-value-)
+    - [Plugin_Cvar_SetInt](#plugin_cvar_setint-convar_t-cvar-int-value-)
+    - [Plugin_Cvar_SetFloat](#plugin_cvar_setfloat-convar_t-cvar-float-value-)
+    - [Plugin_Cvar_GetString](#plugin_cvar_getstring-convar_t-cvar-)
+    - [Plugin_Cvar_GetBool](#plugin_cvar_getbool-convar_t-cvar-)
+    - [Plugin_Cvar_GetInt](#plugin_cvar_getint-convar_t-cvar-)
+    - [Plugin_Cvar_GetFloat](#plugin_cvar_getfloat-convar_t-cvar-)
+    - [Plugin_Cvar_VariableStringBuffer](#plugin_cvar_variablestringbuffer-char-varname-)
+    - [Plugin_Cvar_VariableValue](#plugin_cvar_variablevalue-char-varname-)
+    - [Plugin_Cvar_VariableIntegerValue](#plugin_cvar_variableintegervalue-char-varname-)
+    - [Plugin_Cvar_VariableBooleanValue](#plugin_cvar_variablebooleanvalue-char-varname-)
+    - [Plugin_Cvar_Set](#plugin_cvar_set-char-varName-char-value-)
+9. [HTTP function](#http-function)
+    - [Plugin_HTTP_makeRequest](#plugin_http_makerequest-char-url-char-data-char-callback-char-method-)
 
 ## Register functions
 These functions are used to add script functions or commands to gsc.
@@ -1133,3 +1153,239 @@ Does a conversion on str, specified with open conversion at conversionIndex.
 
 An example can be found [here](LuaScripts/examples/localization.lua)
 
+## CVAR functions
+
+Functions used to manipulate cvars. Cvars need to be set in config file before loading lua plugin or the value will always be default.
+
+#### Plugin_Cvar_RegisterString( char *varName, char *varValue, int flags, char *varDesc )
+
+Registers a string Cvar, returns reference to registered cvar. Keep the reference saved properly at all times.
+
+Usage example:
+Lua:
+```lua
+idkey = Plugin_Cvar_RegisterString( "http_identkey", "", 0, "Key used to authenticate POST request" )
+```
+
+#### Plugin_Cvar_RegisterBool( char *varName, qboolean varValue, int flags, char *varDesc )
+
+Registers a boolean cvar, returns reference to registered cvar. Keep the reference saved properly at all times.
+
+Usage example:
+Lua:
+```lua
+usehhtp = Plugin_Cvar_RegisterBool( "http_enabled", true, 0, "Enable http functionality" )
+```
+
+#### Plugin_Cvar_RegisterInt( char *varName, int value, int minvalue, int maxvalue, int flags, char *varDesc )
+
+Registers an integer cvar, returns reference to registered cvar. Keep the reference saved properly at all times.
+
+Usage example:
+Lua:
+```lua
+numplayers = Plugin_Cvar_RegisterInt( "num_players", 24, 1, 64, 0, "Maximum number of players" )
+```
+
+#### Plugin_Cvar_RegisterFloat( char *varName, float value, float minvalue, float maxvalue, int flags, char *varDesc )
+
+Registers a float cvar, returns reference to registered cvar. Keep the reference saved properly at all times.
+
+Usage example:
+Lua:
+```lua
+xpmulti = Plugin_Cvar_RegisterFloat( "xpmulti", 1.5, 0.1, 10, 0, "XP multiplier" )
+```
+
+#### Plugin_Cvar_SetString( CONVAR_T *cvar, char *value )
+
+Sets boolean value to specified cvar. CONVAR_T* is the returned reference from register cvar command.
+
+Usage example:
+Lua:
+```lua
+idkey = Plugin_Cvar_RegisterString( "http_identkey", "", 0, "Key used to authenticate POST request" )
+
+Plugin_Cvar_SetString( idkey, "123456789" )
+```
+
+#### Plugin_Cvar_SetBool( CONVAR_T *cvar, qboolean value )
+
+Sets string value to specified cvar. CONVAR_T* is the returned reference from register cvar command.
+
+Usage example:
+Lua:
+```lua
+usehhtp = Plugin_Cvar_RegisterBool( "http_enabled", true, 0, "Enable http functionality" )
+
+Plugin_Cvar_SetBool( usehttp, false )
+```
+
+#### Plugin_Cvar_SetInt( CONVAR_T *cvar, int value )
+
+Sets integer value to specified cvar. CONVAR_T* is the returned reference from register cvar command.
+
+Usage example:
+Lua:
+```lua
+numplayers = Plugin_Cvar_RegisterInt( "num_players", 24, 1, 64, 0, "Maximum number of players" )
+
+Plugin_Cvar_SetInt( numplayers, 48 )
+```
+
+#### Plugin_Cvar_SetFloat( CONVAR_T *cvar, float value )
+
+Sets float value to specified cvar. CONVAR_T* is the returned reference from register cvar command.
+
+Usage example:
+Lua:
+```lua
+xpmulti = Plugin_Cvar_RegisterFloat( "xpmulti", 1.5, 0.1, 10, 0, "XP multiplier" )
+
+Plugin_Cvar_SetFloat( xpmulti, 2.5 )
+```
+
+#### Plugin_Cvar_GetString( CONVAR_T *cvar )
+
+Returns string value of specified cvar with CONVAR_T* reference. CONVAR_T* is the returned reference from register cvar command.
+
+Usage example:
+Lua:
+```lua
+idkey = Plugin_Cvar_RegisterString( "http_identkey", "", 0, "Key used to authenticate POST request" )
+
+str = Plugin_Cvar_GetString( idkey )
+```
+
+#### Plugin_Cvar_GetBool( CONVAR_T *cvar )
+
+Returns boolean value of specified cvar with CONVAR_T* reference. CONVAR_T* is the returned reference from register cvar command.
+
+Usage example:
+Lua:
+```lua
+usehhtp = Plugin_Cvar_RegisterBool( "http_enabled", true, 0, "Enable http functionality" )
+
+bool = Plugin_Cvar_GetBool( usehttp )
+```
+
+#### Plugin_Cvar_GetInt( CONVAR_T *cvar )
+
+Returns integer value of specified cvar with CONVAR_T* reference. CONVAR_T* is the returned reference from register cvar command.
+
+Usage example:
+Lua:
+```lua
+numplayers = Plugin_Cvar_RegisterInt( "num_players", 24, 1, 64, 0, "Maximum number of players" )
+
+num = Plugin_Cvar_GetInt( numplayers )
+```
+
+#### Plugin_Cvar_GetFloat( CONVAR_T *cvar )
+
+Returns float value of specified cvar with CONVAR_T* reference. CONVAR_T* is the returned reference from register cvar command.
+
+Usage example:
+Lua:
+```lua
+xpmulti = Plugin_Cvar_RegisterFloat( "xpmulti", 1.5, 0.1, 10, 0, "XP multiplier" )
+
+num = Plugin_Cvar_GetFloat( xpmulti )
+```
+
+#### Plugin_Cvar_VariableStringBuffer( char *varName )
+
+Returns string value of cvar with varName.
+
+Usage example:
+Lua:
+```lua
+str = Plugin_Cvar_VariableStringBuffer( "idkey" )
+```
+
+#### Plugin_Cvar_VariableValue( char *varName )
+
+Returns float value of cvar with varName.
+
+Usage example:
+Lua:
+```lua
+num = Plugin_Cvar_VariableValue( "xpmulti" )
+```
+
+#### Plugin_Cvar_VariableIntegerValue( char *varName )
+
+Returns integer value of cvar with varName.
+
+Usage example:
+Lua:
+```lua
+num = Plugin_Cvar_VariableIntegerValue( "numplayers" )
+```
+
+#### Plugin_Cvar_VariableBooleanValue( char *varName )
+
+Returns boolean value of cvar with varName.
+
+Usage example:
+Lua:
+```lua
+bool = Plugin_Cvar_VariableBooleanValue( "http_enable" )
+```
+
+#### Plugin_Cvar_Set( char *varName, char *value )
+
+Sets a cvar by name and by a string value which gets interpreted correctly depending on the cvar type.
+
+Usage example:
+Lua:
+```lua
+Plugin_Cvar_Set( "numplayers", "24" ) -- gets interpreted as int cvar
+```
+
+## HTTP function
+
+Following function is used to make http requests. All backend logic is handled on C side.
+
+#### Plugin_HTTP_makeRequest( char *url, char *data, char *callback, char *method )
+
+Creates an async http request, returns true on created request and false if request could not be created. URL must point to endpoint API to handle the request and data must be JSON encoded. Callback is function name in Lua, method is optional parameter and will default to "POST" if left empty. If request is sucessfuly created, the result will be passed to lua callback function. Result is json encoded string on success and nil on fail.
+If request could not be created or there was error from the webserver, you can use OnFrame event to schedule another try at a later time.
+Maximum number of concurent open requests is 64.
+
+
+Usage example:
+Lua:
+```lua
+function foo( gentity )
+
+    url = "https://example.com/codapi.php"
+    data = "{ 'idkey':'12345', 'action':'whatever' }"
+    Plugin_HTTP_makeRequest( url, data, "cb" )
+end
+
+function cb ( result )
+
+    if result then
+
+    -- do something with result
+    -- client might disconnect in meanwhile so gentity might be invalid at this point
+    -- for extra safety work with client nums and keep track with events
+
+    -- call callback function in gsc
+    end
+end
+```
+Gsc:
+```c
+init()
+{
+    level waittill( "connected", player );
+    player foo( ::callback );
+}
+
+callback( arg1, arg2 )
+{
+    // ...
+}
+```
