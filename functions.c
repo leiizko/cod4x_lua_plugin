@@ -344,8 +344,6 @@ int Lua_ScrAddMethod( lua_State *L )
 	
 	Plugin_ScrAddMethod( funcName, (void *)callback );
 
-	Plugin_Printf( "Made method!\n\n" );
-
 	return 0;
 }
 
