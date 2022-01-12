@@ -21,6 +21,7 @@ struct lua_mysql_r
     MYSQL_RES *pMysqlRes;
     char *callback;
     unsigned int pMysqlErrNo;
+    unsigned int affectedRows;
     lua_mysql_r *next;
 };
 

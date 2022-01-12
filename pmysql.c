@@ -34,13 +34,46 @@ void Lua_Mysql_Update()
             {
                 lua_getglobal( LuaVM, tmp->callback );
 
-                if( tmp->pMysqlRes == NULL )
+                if( tmp->pMysqlRes == NULL && tmp->pMysqlErrNo == 0 )
                 {
-                    lua_pushnil( LuaVM );
+                    lua_newtable( LuaVM );
+                    lua_pushinteger( LuaVM, 0 );
+                    lua_setfield( LuaVM, -2, "status" );
+                    lua_pushinteger( LuaVM, 0 );
+                    lua_setfield( LuaVM, -2, "num_rows" );
+                    lua_pushinteger( LuaVM, tmp->affectedRows );
+                    lua_setfield( LuaVM, -2, "affected_rows" );
+                    lua_pushinteger( LuaVM, 0 );
+                    lua_setfield( LuaVM, -2, "num_fields" );
+                }
+                else if( tmp->pMysqlErrNo == 0 && tmp->pMysqlRes != NULL )
+                {  
+                    lua_newtable( LuaVM );
+                    lua_pushinteger( LuaVM, 0 );
+                    lua_setfield( LuaVM, -2, "status" );
+
+                    int numrows = mysql_num_rows( tmp->pMysqlRes );
+                    lua_pushinteger( LuaVM, numrows );
+                    lua_setfield( LuaVM, -2, "num_rows" );
+
+                    lua_pushinteger( LuaVM, tmp->affectedRows );
+                    lua_setfield( LuaVM, -2, "affected_rows" );
+
+                    int numfields = mysql_num_fields( tmp->pMysqlRes );
+                    lua_pushinteger( LuaVM, numfields );
+                    lua_setfield( LuaVM, -2, "num_fields" );
                 }
                 else
                 {
-                    lua_pushlightuserdata( LuaVM, tmp->pMysqlRes );
+                    lua_newtable( LuaVM );
+                    lua_pushinteger( LuaVM, tmp->pMysqlErrNo );
+                    lua_setfield( LuaVM, -2, "status" );
+                    lua_pushinteger( LuaVM, 0 );
+                    lua_setfield( LuaVM, -2, "num_rows" );
+                    lua_pushinteger( LuaVM, 0 );
+                    lua_setfield( LuaVM, -2, "affected_rows" );
+                    lua_pushinteger( LuaVM, 0 );
+                    lua_setfield( LuaVM, -2, "num_fields" );
                 }
 
                 Plugin_Lua_pcall( LuaVM, 1, LUA_MULTRET );
@@ -269,6 +302,7 @@ static void* pMysqlQuery( void* q )
         res = malloc( sizeof( lua_mysql_r ) );
         res->callback = tmp->callback;
         res->next = NULL;
+        res->affectedRows = 0;
 
         if( mysql_query( sqlhandle->pMysql, tmp->query ) == 0 )
         {
@@ -280,8 +314,10 @@ static void* pMysqlQuery( void* q )
             {
                 Plugin_PrintError( "********\nMySql query failed! \nhandle: %i \nErrNo: %i \nErr: %s \nQuery: %s \n********\n", 
                                 tmp->handle, res->pMysqlErrNo, mysql_error( sqlhandle->pMysql ), tmp->query );
-
-                free( res );
+            }
+            else
+            {
+                res->affectedRows = mysql_affected_rows( sqlhandle->pMysql );
             }
         }
         else
