@@ -2,9 +2,9 @@
 #define MAIN_H
 
 #include "../pinc.h"
-#include "inc/lua.h"
-#include "inc/lualib.h"
-#include "inc/lauxlib.h"
+#include "Include/Lua/lua.h"
+#include "Include/Lua/lualib.h"
+#include "Include/Lua/lauxlib.h"
 #include <stdlib.h>
 #include <math.h>
 

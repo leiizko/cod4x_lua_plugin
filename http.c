@@ -1,5 +1,6 @@
 #include "main.h"
 #include "http.h"
+#include "qcommon.h"
 
 lua_httpReq openRequests[ LUA_HTTP_MAXOPENREQUESTS ];
 
@@ -20,21 +21,21 @@ int Lua_HTTP_makeRequest( lua_State *L )
 	
 	if( !lua_isstring( L, 1 ) ) 
 	{
-		luaL_error( L, "Plugin_Scr_AddString: parameter 1 must be a string!" );
+		luaL_error( L, "Plugin_HTTP_makeRequest: parameter 1 must be a string!" );
 		return 1;
 	}
 	char *url = (char *)lua_tostring( L, 1 );
 	
 	if( !lua_isstring( L, 2 ) ) 
 	{
-		luaL_error( L, "Plugin_Scr_AddString: parameter 2 must be a string!" );
+		luaL_error( L, "Plugin_HTTP_makeRequest: parameter 2 must be a string!" );
 		return 1;
 	}
 	char *data = (char *)lua_tostring( L, 2 );
 	
 	if( !lua_isstring( L, 3 ) ) 
 	{
-		luaL_error( L, "Plugin_Scr_AddString: parameter 3 must be a string!" );
+		luaL_error( L, "Plugin_HTTP_makeRequest: parameter 3 must be a string!" );
 		return 1;
 	}
 	char *callback = (char *)lua_tostring( L, 3 );
@@ -44,7 +45,7 @@ int Lua_HTTP_makeRequest( lua_State *L )
 	{
 		if( !lua_isstring( L, 4 ) ) 
 		{
-			luaL_error( L, "Plugin_Scr_AddString: parameter 4 must be a string!" );
+			luaL_error( L, "Plugin_HTTP_makeRequest: parameter 4 must be a string!" );
 			return 1;
 		}
 		method = (char *)lua_tostring( L, 4 );
@@ -67,7 +68,13 @@ int Lua_HTTP_makeRequest( lua_State *L )
 		return 1;
 	}
 	
-	r->callback = callback;
+	r->callback = Q_Strcpy( callback );
+	if( r->callback == NULL )
+	{
+		lua_pushinteger( L, 0 );
+		return 1;
+	}
+
 	if( !Q_stricmp( method, "POST" ) )
 	{
 		r->request = Plugin_HTTP_MakeHttpRequest( url, method, (byte *)data, strlen(data), "Content-Type: application/json\r\n" );
@@ -80,6 +87,7 @@ int Lua_HTTP_makeRequest( lua_State *L )
 	if( r->request == NULL )
 	{
 		Plugin_DPrintf( "Lua HTTP: Could not open new http request!\n" );
+		free( r->callback );
 		lua_pushinteger( L, 0 );
 		return 1;
 	}
@@ -109,7 +117,7 @@ void Lua_HTTP_updateRequests()
 			}
 			else
 			{
-				lua_pushstring( LuaVM, NULL );
+				lua_pushnil( LuaVM );
 			}
 			Plugin_Lua_pcall( LuaVM, 1, LUA_MULTRET );
 			
@@ -117,6 +125,8 @@ void Lua_HTTP_updateRequests()
 			
 			Plugin_HTTP_FreeObj( r->request );
 			r->request = NULL;
+
+			free( r->callback );
 			r->callback = NULL;
 			
 			popRequest( i );
@@ -146,48 +156,4 @@ void popRequest( int index )
 		
 		openRequests[ i ] = openRequests[ i + 1 ];
 	}
-}
-
-int Q_stricmpn( const char *s1, const char *s2, int n ) 
-{
-	int		c1, c2;
-
-        if ( s1 == NULL ) {
-           if ( s2 == NULL )
-             return 0;
-           else
-             return -1;
-        }
-        else if ( s2==NULL )
-          return 1;
-
-
-
-	do {
-		c1 = *s1++;
-		c2 = *s2++;
-
-		if (!n--) {
-			return 0;		// strings are equal until end point
-		}
-
-		if (c1 != c2) {
-			if (c1 >= 'a' && c1 <= 'z') {
-				c1 -= ('a' - 'A');
-			}
-			if (c2 >= 'a' && c2 <= 'z') {
-				c2 -= ('a' - 'A');
-			}
-			if (c1 != c2) {
-				return c1 < c2 ? -1 : 1;
-			}
-		}
-	} while (c1);
-
-	return 0;		// strings are equal
-}
-
-int Q_stricmp( const char *s1, const char *s2 ) 
-{
-	return (s1 && s2) ? Q_stricmpn (s1, s2, 99999) : -1;
 }

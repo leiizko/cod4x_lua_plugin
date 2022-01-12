@@ -21,32 +21,23 @@ jobs:
         sudo apt-get install g++-multilib gcc-multilib
         sudo dpkg --add-architecture i386 
         sudo apt-get install nasm:i386 paxctl:i386 libtommath-dev:i386
-        wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz
-        sudo tar -zxvf libiconv-1.16.tar.gz
-        cd libiconv-1.16
-        sudo ./configure --prefix=/usr/local --host=i686-linux-gnu "CFLAGS=-m32" "CXXFLAGS=-m32" "LDFLAGS=-m32"
-        sudo make
-        sudo make install
-        sudo ln -s /usr/local/lib/libiconv.so.2 /usr/lib/libiconv.so.2
-        sudo ldconfig
        
     - name: Checkout plugin
       uses: actions/checkout@v2
       with:
-        repository: leiizko/cod4x_lua_plugin
         path: server/plugins/lua
       
     - name: Build plugin
       run: |
         cd server/plugins/lua
-        make ICONV=true
+        make
         
     - name: Publish
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "server/plugins/lua/lua.so"
+        artifacts: "server/plugins/lua/bin/lua.so"
         
   windows:
     name: Windows
@@ -88,7 +79,6 @@ jobs:
     - name: Checkout plugin
       uses: actions/checkout@v2
       with:
-        repository: leiizko/cod4x_lua_plugin
         path: server/plugins/lua
         
     - name: Build plugin
@@ -97,11 +87,11 @@ jobs:
         $env:Path = "C:\mingw32\bin;"
         $env:Path += $path
         cd server/plugins/lua
-        mingw32-make ICONV=true
+        mingw32-make
         
     - name: Publish
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "server/plugins/lua/lua.dll"
+        artifacts: "server/plugins/lua/bin/lua.dll"

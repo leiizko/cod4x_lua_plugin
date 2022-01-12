@@ -14,7 +14,4 @@ int Lua_HTTP_makeRequest( lua_State *L );
 void Lua_HTTP_updateRequests();
 void popRequest( int index );
 
-int	Q_stricmpn( const char *s1, const char *s2, int n );
-int	Q_stricmp( const char *s1, const char *s2 );
-
 #endif // HTTP_H

@@ -1,10 +1,14 @@
 #include "main.h"
 #include "functions.h"
 #include "http.h"
+#include "pmysql.h"
 
 lua_State *LuaVM = NULL;
 char *AllocMem = NULL;
 int definedFunctions = 0;
+
+cvar_t *cvar_enableHttp;
+cvar_t *cvar_enableMysql;
 
 void Sv_LoadLuaScript()
 {
@@ -78,11 +82,23 @@ PCL int OnInit()
 #else
 	mprotect( AllocMem, sizeof( AllocMem ), PROT_EXEC | PROT_WRITE | PROT_READ );
 #endif
+
+	cvar_enableHttp = Plugin_Cvar_RegisterBool( "lua_enable_http", qfalse, CVAR_INIT, "Enable HTTP functionality of plugin" );
+	cvar_enableMysql = Plugin_Cvar_RegisterBool( "lua_enable_mysql", qtrue, CVAR_INIT, "Enable MySQL functionality of plugin" );
 	
 	luaL_openlibs( LuaVM );
 	
 	registerFunctionsToLua();
-	httpInit();
+
+	if( Plugin_Cvar_GetBoolean( cvar_enableHttp ) )
+	{
+		httpInit();
+	}
+
+	if( Plugin_Cvar_GetBoolean( cvar_enableMysql ) )
+	{
+		mysqlInit();
+	}
 	
 	Plugin_AddCommand( "lua_loadscript", Sv_LoadLuaScript, 0 );
 	Plugin_AddCommand( "lua_debug", Sv_LuaDebug, 0 );
@@ -276,7 +292,14 @@ PCL void OnPlayerDC(client_t* client, const char* reason)
 
 PCL void OnFrame()
 {
-	Lua_HTTP_updateRequests();
+	if( Plugin_Cvar_GetBoolean( cvar_enableHttp ) )
+	{
+		Lua_HTTP_updateRequests();
+	}
+	if( Plugin_Cvar_GetBoolean( cvar_enableMysql ) )
+	{
+		Lua_Mysql_Update();
+	}
 	
 	lua_getglobal( LuaVM, "OnFrame" );
 	
