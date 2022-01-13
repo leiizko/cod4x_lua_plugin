@@ -20,5 +20,6 @@ Event documentation can be found [here](LuaScripts/examples/events.lua)
 As of version 0.5 plugin requires server version [b3b68dd](https://github.com/callofduty4x/CoD4x_Server/commit/b3b68dda2ede9c83c28192ac8973b9bb19265599) or later.
 
 # Compiling
-To compile without libiconv enter directory and run make. To include libiconv enter directory and run make ICONV=TRUE. 
-On Windows you need to compile the server first.
+Get server source first [here](https://github.com/callofduty4x/CoD4x_Server). Place plugin source into plugins/lua within server source, enter lua directory and run make. Compiled binary will be placed in bin directory.
+
+On Windows OS server must be compiled first.
