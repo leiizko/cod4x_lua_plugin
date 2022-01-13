@@ -1409,7 +1409,7 @@ handle = Plugin_Mysql_Connect( "localhost", "user", "password", "database" )
 
 #### Plugin_Mysql_Query( int handle, char *callback, char *query )
 
-Starts a query with valid handle returned by Plugin_Mysql_Connect(). Function will always return a table as parameter with:
+Starts a query with valid handle returned by Plugin_Mysql_Connect(). Returns nil if query failed to start and 1 if it started, however it can still fail later. On successfull start callback function is started with table as parameter:
 .status = ErrNo ( 0 is successfull query )
 .num_rows = number of rows returned for query
 .affected_rows = number of affected rows for query - if query is SELECT ... it will be same as .num_rows

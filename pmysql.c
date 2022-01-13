@@ -279,20 +279,20 @@ int Lua_Mysql_Query( lua_State *L )
     if( tmp == NULL )
     {
         Plugin_PrintError( "Lua Mysql: Failed to alloc memory!\n" );
-        lua_pushinteger( L, 0 );
+        lua_pushnil( L );
         return 1;
     }
 
     tmp->callback = Q_Strcpy( callback );
     if( tmp->callback == NULL )
     {
-        lua_pushinteger( L, 0 );
+        lua_pushnil( L );
         return 1;
     }
     tmp->query = Q_Strcpy( query );
     if( tmp->query == NULL )
     {
-        lua_pushinteger( L, 0 );
+        lua_pushnil( L );
         return 1;
     }
     tmp->handle = handle;
@@ -317,7 +317,7 @@ int Lua_Mysql_Query( lua_State *L )
             Plugin_LeaveCriticalSection();
 
             Plugin_PrintError( "Lua Mysql: Failed to start thread!\n" );
-            lua_pushinteger( L, 0 );
+            lua_pushnil( L );
             return 1;
         }
     }
