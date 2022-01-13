@@ -62,6 +62,48 @@ void Lua_Mysql_Update()
                     int numfields = mysql_num_fields( tmp->pMysqlRes );
                     lua_pushinteger( LuaVM, numfields );
                     lua_setfield( LuaVM, -2, "num_fields" );
+
+                    MYSQL_FIELD *field;
+                    char **keyFields = malloc( sizeof( char* ) * numfields );
+
+                    int arridx = 0;
+                    while( ( field = mysql_fetch_field( tmp->pMysqlRes ) ) != NULL )
+                    {
+                        keyFields[ arridx ] = Q_Strcpy( field->name );
+                        arridx++;
+                    }
+
+                    MYSQL_ROW row = NULL;
+                    arridx = 1;
+                    while( ( row = mysql_fetch_row( tmp->pMysqlRes ) ) != NULL )
+                    {
+                        lua_newtable( LuaVM ); // {}o, {}n
+
+                        for( int j = 0; j < numfields; j++ )
+                        {
+                            if( row[ j ] == NULL )
+                            {
+                                lua_pushnil( LuaVM ); // {}o, {}n, nill
+                                lua_setfield( LuaVM, -2, keyFields[ j ] ); // {}o, {}n
+                            }
+                            else
+                            {
+                                lua_pushstring( LuaVM, row[ j ] );
+                                lua_setfield( LuaVM, -2, keyFields[ j ] );
+                            }
+                        }
+
+                        lua_pushinteger( LuaVM, arridx ); // {}o, {}n, arridx
+                        lua_insert( LuaVM, -2 ); // {}o, arridx, {}n
+                        lua_settable( LuaVM, -3 ); // {}o
+
+                        arridx++;
+                    }
+
+                    for( int j = 0; j < numfields; j++ )
+                    {
+                        free( keyFields[ j ] );
+                    }
                 }
                 else
                 {
