@@ -31,13 +31,15 @@ jobs:
       run: |
         cd server/plugins/lua
         make
+        cd bin
+        7z a lua_unix.zip lua.so -mx9
         
     - name: Publish
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "server/plugins/lua/bin/lua.so"
+        artifacts: "server/plugins/lua/bin/lua_unix.zip"
         
   windows:
     name: Windows
@@ -88,10 +90,14 @@ jobs:
         $env:Path += $path
         cd server/plugins/lua
         mingw32-make
+        Copy-Item -Path Include/mysql/windows/lib/libmysql.dll -Destination bin/
+        cd bin
+        7z a lua_windows.zip lua.dll libmysql.dll -mx9
+        
         
     - name: Publish
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "server/plugins/lua/bin/lua.dll"
+        artifacts: "server/plugins/lua/bin/lua_windows.zip"

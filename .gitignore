@@ -1,5 +1,5 @@
 *.o
-*.dll
+bin/*.dll
 *.so
 *.bat
 *.cmd
