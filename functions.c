@@ -1,6 +1,8 @@
 #include "main.h"
 #include "functions.h"
 
+iconv_t cd_g[ MAX_CD ];
+
 void registerFunctionsToLua()
 {
 	// Register functions
@@ -84,17 +86,11 @@ void registerFunctionsToLua()
 	lua_register( LuaVM, "Plugin_Scr_Notify", Lua_Scr_Notify );
 	
 	// iconv
-#ifdef EICONV
 	lua_register( LuaVM, "Plugin_iconv_open", Lua_iconv_open );
 	lua_register( LuaVM, "Plugin_iconv_close", Lua_iconv_close );
 	lua_register( LuaVM, "Plugin_iconv", Lua_iconv );
-#endif // EICONV
 }
 
-#ifdef EICONV
-
-#define MAX_CD 3
-iconv_t cd_g[ MAX_CD ];
 int Lua_iconv( lua_State *L )
 {
 	int n = lua_gettop( L );
@@ -260,7 +256,6 @@ int Lua_iconv_open( lua_State *L )
 		}
 	}
 }
-#endif // EICONV
 
 int Lua_Cmd_AddCommand( lua_State *L )
 {

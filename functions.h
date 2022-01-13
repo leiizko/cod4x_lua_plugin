@@ -1,10 +1,10 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-#ifdef EICONV
-	#include <iconv.h>
-	#include <errno.h>
-#endif // EICONV
+#include <iconv.h>
+#include <errno.h>
+
+#define MAX_CD 3
 
 void registerFunctionsToLua();
 
@@ -88,10 +88,8 @@ int Lua_Scr_NotifyLevel( lua_State *L );
 int Lua_Scr_Notify( lua_State *L );
 
 // iconv
-#ifdef EICONV
 int Lua_iconv_open( lua_State *L );
 int Lua_iconv_close( lua_State *L );
 int Lua_iconv( lua_State *L );
-#endif // EICONV
 
 #endif // FUNCTIONS_H

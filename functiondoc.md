@@ -80,6 +80,9 @@ We do our best to keep it updated._
     - [Plugin_Cvar_Set](#plugin_cvar_set-char-varName-char-value-)
 9. [HTTP function](#http-function)
     - [Plugin_HTTP_makeRequest](#plugin_http_makerequest-char-url-char-data-char-callback-char-method-)
+10. [MySQL functions](#mysql-functions)
+    - [Plugin_Mysql_Connect](#plugin_mysql_connect-char-host-char-user-char-password-char-db-int-port-)
+    - [Plugin_Mysql_Query](#plugin_mysql_query-int-handle-char-callback-char-query-)
 
 ## Register functions
 These functions are used to add script functions or commands to gsc.
@@ -1345,7 +1348,7 @@ Plugin_Cvar_Set( "numplayers", "24" ) -- gets interpreted as int cvar
 
 ## HTTP function
 
-Following function is used to make http requests. All backend logic is handled on C side.
+Following function is used to make http requests. All backend logic is handled on C side. Cvar lua_enable_http must be set to 1 before loading Lua plugin to enable http functionality.
 
 #### Plugin_HTTP_makeRequest( char *url, char *data, char *callback, char *method )
 
@@ -1388,4 +1391,52 @@ callback( arg1, arg2 )
 {
     // ...
 }
+```
+
+## MySQL functions
+
+Enables connecting and querying of MySQL/MariaDB databases. Cvar lua_enable_mysql must be set to 1 to enable MySQL functionality. You can connect up to a maximum of 4 databases.
+
+#### Plugin_Mysql_Connect( char *host, char *user, char *password, char *db, [int port] )
+
+Connects to a database, port is optional and defaults to 3306. Returns database handle on success and nil on failure. This function is blocking!
+
+Usage example:
+Lua:
+```lua
+handle = Plugin_Mysql_Connect( "localhost", "user", "password", "database" )
+```
+
+#### Plugin_Mysql_Query( int handle, char *callback, char *query )
+
+Starts a query with valid handle returned by Plugin_Mysql_Connect(). Returns nil if query failed to start and 1 if it started, however it can still fail later. On successfull start callback function is started with table as parameter:
+.status = ErrNo ( 0 is successfull query )
+.num_rows = number of rows returned for query
+.affected_rows = number of affected rows for query - if query is SELECT ... it will be same as .num_rows
+.num_fields = number of fields/columns returned for query
+
+If number of returned rows is greater than 0 then results are available at row index (starting at 1) with field/column names as defined in database.
+This function is non-blocking!
+
+Usage example:
+Lua:
+```lua
+handle = Plugin_Mysql_Connect( "localhost", "user", "password", "database" )
+
+if handle then
+    Plugin_Mysql_Query( handle, "cb", "SELECT * FROM `players` WHERE `fps` = 0 LIMIT 5" )
+end
+
+function cb ( result )
+
+    Plugin_Printf( "Status: " .. result.status .. "\n" )
+    Plugin_Printf( "num_rows: " .. result.num_rows .. "\n" )
+    Plugin_Printf( "affected_rows: " .. result.affected_rows .. "\n" )
+    Plugin_Printf( "num_fields: " .. result.num_fields .. "\n" )
+
+    for i=1,result.num_rows,1 do
+        Plugin_Printf( "emblem: " .. result[ i ].emblem .. "\n" )
+        Plugin_Printf( "id: " .. result[ i ].id .. "\n" )
+    end
+end
 ```
