@@ -18,7 +18,7 @@
 #define MAX_FUNCTIONS 0x40
 #define STUB_SIZE 0x20
 #define PLUGIN_VERSION_MAJOR 0
-#define PLUGIN_VERSION_MINOR 5
+#define PLUGIN_VERSION_MINOR 6
 
 typedef unsigned int long DWORD;
 
