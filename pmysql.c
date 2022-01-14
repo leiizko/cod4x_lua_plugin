@@ -4,9 +4,11 @@
 
 static void* pMysqlQuery( void* q );
 lua_mysql dbpool[ LUA_MYSQL_MAX_CONNECTIONS ];
+cvar_t *stringnil;
 
 void mysqlInit()
 {
+    stringnil = Plugin_Cvar_RegisterBool( "lua_mysql_stringnil", qfalse, CVAR_INIT, "Represent NULL fields as string nil" );
     mysql_library_init( 0, NULL, NULL );
 
     // init struct
@@ -21,13 +23,14 @@ void mysqlInit()
 
     lua_register( LuaVM, "Plugin_Mysql_Connect", Lua_Mysql_Connect );
     lua_register( LuaVM, "Plugin_Mysql_Query", Lua_Mysql_Query );
+    lua_register( LuaVM, "Plugin_Mysql_Close", Lua_Mysql_Close );
 }
 
 void Lua_Mysql_Update()
 {
     for( int i = 0; i < LUA_MYSQL_MAX_CONNECTIONS; i++ )
     {
-        if( dbpool[ i ].pMysql != NULL && dbpool[ i ].first_R != NULL )
+        if( dbpool[ i ].first_R != NULL )
         {
             lua_mysql_r *tmp = dbpool[ i ].first_R;
             while( tmp != NULL )
@@ -81,15 +84,17 @@ void Lua_Mysql_Update()
 
                         for( int j = 0; j < numfields; j++ )
                         {
-                            if( row[ j ] == NULL )
-                            {
-                                lua_pushnil( LuaVM ); // {}o, {}n, nill
-                                lua_setfield( LuaVM, -2, keyFields[ j ] ); // {}o, {}n
-                            }
-                            else
+                            if( row[ j ] != NULL )
                             {
                                 lua_pushstring( LuaVM, row[ j ] );
                                 lua_setfield( LuaVM, -2, keyFields[ j ] );
+                            }
+                            else if( Plugin_Cvar_GetBoolean( stringnil ) )
+                            {
+                                // pushing nil is same as not creating table field in the first place
+                                // pushing string "nil" instead
+                                lua_pushstring( LuaVM, "nil" ); // {}o, {}n, "nil"
+                                lua_setfield( LuaVM, -2, keyFields[ j ] ); // {}o, {}n
                             }
                         }
 
@@ -104,6 +109,7 @@ void Lua_Mysql_Update()
                     {
                         free( keyFields[ j ] );
                     }
+                    free( keyFields );
                 }
                 else
                 {
@@ -131,6 +137,45 @@ void Lua_Mysql_Update()
             }
         }
     }
+}
+
+int Lua_Mysql_Close( lua_State *L )
+{
+    int n = lua_gettop( L );
+	
+	if( n != 1 )
+	{
+		luaL_error( L, "Plugin_Mysql_Close: Function requires 1 parameter!" );
+		return 1;
+	}
+
+    if( !lua_isnumber( L, 1 ) )
+    {
+        luaL_error( L, "Plugin_Mysql_Close: parameter 1 must be an integer!" );
+		return 1;
+    }
+    int handle = lua_tointeger( L, 1 );
+
+    if( !checkConnection( handle ) )
+    {
+        luaL_error( L, "Plugin_Mysql_Close: invalid handle!" );
+        return 1;
+    }
+
+    lua_mysql *sqlhandle = &dbpool[ handle ];
+
+    // Let open queries finish
+    // Plugin_Mysql_Query is same thread so new ones can't be started
+    while( sqlhandle->first_Q != NULL )
+    {
+        Plugin_SleepMSec( 5 );
+    }
+
+    // results get popped in update
+    mysql_close( sqlhandle->pMysql );
+    sqlhandle->pMysql = NULL;
+
+    return 0;
 }
 
 int Lua_Mysql_Connect( lua_State *L )

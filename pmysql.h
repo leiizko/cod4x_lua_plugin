@@ -36,6 +36,7 @@ typedef struct
 
 int Lua_Mysql_Connect( lua_State *L );
 int Lua_Mysql_Query( lua_State *L );
+int Lua_Mysql_Close( lua_State *L );
 
 void mysqlInit();
 void Lua_Mysql_Update();

@@ -83,6 +83,7 @@ We do our best to keep it updated._
 10. [MySQL functions](#mysql-functions)
     - [Plugin_Mysql_Connect](#plugin_mysql_connect-char-host-char-user-char-password-char-db-int-port-)
     - [Plugin_Mysql_Query](#plugin_mysql_query-int-handle-char-callback-char-query-)
+    - [Plugin_Mysql_Close](#plugin_mysql_close-int-handle-)
 
 ## Register functions
 These functions are used to add script functions or commands to gsc.
@@ -1416,6 +1417,7 @@ Starts a query with valid handle returned by Plugin_Mysql_Connect(). Returns nil
 .num_fields = number of fields/columns returned for query
 
 If number of returned rows is greater than 0 then results are available at row index (starting at 1) with field/column names as defined in database.
+Additional cvar lua_mysql_stringnil is used to control return of NULL fields. By default if mysql field is NULL, the table field will not be created. Setting the cvar to 1 will return table field with string value "nil" instead.
 This function is non-blocking!
 
 Usage example:
@@ -1438,5 +1440,19 @@ function cb ( result )
         Plugin_Printf( "emblem: " .. result[ i ].emblem .. "\n" )
         Plugin_Printf( "id: " .. result[ i ].id .. "\n" )
     end
+end
+```
+
+#### Plugin_Mysql_Close( int handle )
+
+Closes open database connection. Function will block while there are open queries.
+
+Usage example:
+Lua:
+```lua
+handle = Plugin_Mysql_Connect( "localhost", "user", "password", "database" )
+
+if handle then
+    Plugin_Mysql_Close( handle )
 end
 ```
