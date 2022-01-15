@@ -64,14 +64,14 @@ int Lua_HTTP_makeRequest( lua_State *L )
 	if( r == NULL )
 	{
 		Plugin_DPrintf( "Lua HTTP: max open requests reached!\n" );
-		lua_pushinteger( L, 0 );
+		lua_pushnil( L );
 		return 1;
 	}
 	
 	r->callback = Q_Strcpy( callback );
 	if( r->callback == NULL )
 	{
-		lua_pushinteger( L, 0 );
+		lua_pushnil( L );
 		return 1;
 	}
 
@@ -88,7 +88,7 @@ int Lua_HTTP_makeRequest( lua_State *L )
 	{
 		Plugin_DPrintf( "Lua HTTP: Could not open new http request!\n" );
 		free( r->callback );
-		lua_pushinteger( L, 0 );
+		lua_pushnil( L );
 		return 1;
 	}
 	

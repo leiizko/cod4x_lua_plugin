@@ -1353,7 +1353,7 @@ Following function is used to make http requests. All backend logic is handled o
 
 #### Plugin_HTTP_makeRequest( char *url, char *data, char *callback, char *method )
 
-Creates an async http request, returns true on created request and false if request could not be created. URL must point to endpoint API to handle the request and data must be JSON encoded. Callback is function name in Lua, method is optional parameter and will default to "POST" if left empty. If request is sucessfuly created, the result will be passed to lua callback function. Result is json encoded string on success and nil on fail.
+Creates an async http request, returns true on created request and nil if request could not be created. URL must point to endpoint API to handle the request and data must be JSON encoded. Callback is function name in Lua, method is optional parameter and will default to "POST" if left empty. If request is sucessfuly created, the result will be passed to lua callback function. Result is json encoded string on success and nil on fail.
 If request could not be created or there was error from the webserver, you can use OnFrame event to schedule another try at a later time.
 Maximum number of concurent open requests is 64.
 
