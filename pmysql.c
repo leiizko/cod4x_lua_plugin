@@ -192,7 +192,7 @@ int Lua_Mysql_Connect( lua_State *L )
 
     if( handle < 0 )
     {
-        Plugin_DPrintf( "Lua Mysql: max open connections reached!\n" );
+        Plugin_PrintError( "Lua Mysql: max open connections reached!\n" );
 		lua_pushnil( L );
 		return 1;
     }
